@@ -3,19 +3,20 @@
 
 # set run paramters
 SAVE_OUTPUT = 0 # default: 1. Save the output of the script.
-SCENARIOS   = [2,3,4] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   = [1] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
-n_rep = 1    # number of repetitions.
+n_rep = 30   #default: 1000 number of repetitions.
 PRINT = 0    # print (intermediate) results.
 theta = 0.5  # true ATE parameter.
 n_obs = 1000 # number of observations.
 dim_x = 20   # Number of explanatory (confunding) variables.
-TUNE_MODEL = 1 # default: 1. Tune the model using a 5-fold cross-validation with grid search
+n_fold= 2    # Number of folds for ML model cross-fitting.
+TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
 # models to consider using the first replication.
 OLS_     = 1 # estimate the OLS model.
-OLS_PO_  = 0 # estimate the OLS partialed-out model.
+OLS_PO_  = 1 # estimate the OLS partialed-out model.
 TWO_SLS_ = 1 # estimate the 2SLS model.
 NAIVE_ML_= 1 # estimate the naive ML model.
 DML_PLR_ = 1 # estimate the DML-PLR model.
@@ -32,6 +33,7 @@ import sys, os, json
 from datetime import date
 
 #root_dir = '/home/studio-lab-user/'
+#root_dir ='/mnt/batch/tasks/shared/LS_root/mounts/clusters/grmnzntt1/code/Users/grmnzntt/'
 root_dir = 'C:/DEV/'
 pth_to_src = root_dir+'DML/src/'
 # data:
@@ -110,7 +112,7 @@ for SCENARIO in SCENARIOS:
             # Generate data
             # linear DGP    
             if not NON_LINEAR_DGP and not IV_DGP:
-                data = make_plr_CCDDHNR2018(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 1) #a_0 = 1, a_1 = 0.25, s_1 = 1, b_0 = 1, b_1 = 0.25, s_2 = 1)
+                data = make_plr_CCDDHNR2018(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1, a_1 = 0.25, s_1 = 1, b_0 = 1, b_1 = 0.25, s_2 = 1) #a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 1) #
             # non-linear DGP    
             elif NON_LINEAR_DGP and not IV_DGP:
                 data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x, R2_d=0.5, R2_y=0.5, return_type='DataFrame')                  
@@ -130,7 +132,7 @@ for SCENARIO in SCENARIOS:
             model_object_list = []
             for m in model_index:
                 # Initialize the model object:
-                model_object_m = model_object(m.lower())
+                model_object_m = model_object(m.lower(), n_fold)
                 # update the data for the model objects:
                 model_object_m.update_data(data)
                 # tune the model dml objects:
@@ -142,11 +144,19 @@ for SCENARIO in SCENARIOS:
                         with open(file_name_tuned_parameters) as f:
                             tuned_params = f.read()
                         tuned_params = json.loads(tuned_params)
+                        # adjust the number of folds if needed:
+                        for i in tuned_params:
+                            for j in tuned_params[i].keys():
+                                # adjust if the tuned_paramters are not of length n-fold:
+                                if len(tuned_params[i][j][0]) != model_object_m.n_folds:
+                                    tuned_params[i][j] =                                 [np.repeat(tuned_params[i][j][0][0],model_object_m.n_folds).tolist()]
+                                
                         # set the tuned_params
                         model_object_m.model_obj.params.update(tuned_params)
                     else:
                         #tune the parameters
                         #Note that the parameter are tuned globally, i.e., across folds but are stored per fold, whereas each set of paramters is the same per fold.
+                        print('\nTune hyper-parameters ...')
                         model_object_m.tune(param_grids)   
                         tuned_params = model_object_m.model_obj.params
                         # save 

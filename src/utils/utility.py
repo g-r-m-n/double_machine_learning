@@ -12,12 +12,13 @@ import pandas as pd
 
 class model_object:
     
-    def __init__(self,model_type):
+    def __init__(self,model_type, n_fold = 2):
         self.type = model_type
         # is dml model type?
         self.type_dml  =  self.type in ['dml-plr','dml-pliv','dml-irm','dml-iiv','naive-ml']
         # is linear regression model type?
         self.type_lreg =  self.type in ['2sls','ols','ols-partialed-out']
+        self.n_folds = n_fold
         
     def update_data(self, data) :  
         
@@ -43,7 +44,7 @@ class model_object:
                 else:                    
                     self.ml_m = clone(learner_reg)
                 
-                self.model_obj  = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m)
+                self.model_obj  = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m, n_folds = self.n_folds)
             elif self.type == 'dml-pliv':
                 
                 obj_dml_data = dml.DoubleMLData(data, 'y', 'd', z_cols=iv_vars)
@@ -57,7 +58,7 @@ class model_object:
                 #ml learner for the nuisance function r0(X)=E[D|X]:
                 self.ml_r = clone(learner_reg)
                 
-                self.model_obj = dml.DoubleMLPLIV(obj_dml_data, self.ml_l, self.ml_m, self.ml_r)
+                self.model_obj = dml.DoubleMLPLIV(obj_dml_data, self.ml_l, self.ml_m, self.ml_r, n_folds = self.n_folds)
                 
             elif self.type == 'dml-irm':
                 
@@ -69,7 +70,7 @@ class model_object:
                 #ml learner for the nuisance function m0(X)=E[D|X]:
                 self.ml_m = clone(learner_class)
                 
-                self.model_obj = dml.DoubleMLIRM(obj_dml_data, self.ml_g, self.ml_m)
+                self.model_obj = dml.DoubleMLIRM(obj_dml_data, self.ml_g, self.ml_m, n_folds = self.n_folds)
                 
             elif self.type == 'dml-iiv':
 
@@ -84,7 +85,7 @@ class model_object:
                 #ml learner for the nuisance function r0(X)=E[D|X]:
                 self.ml_r = clone(learner_class)
                 
-                self.model_obj = dml.DoubleMLIIVM(obj_dml_data, self.ml_g, self.ml_m, self.ml_r)    
+                self.model_obj = dml.DoubleMLIIVM(obj_dml_data, self.ml_g, self.ml_m, self.ml_r, n_folds = self.n_folds)    
                 
             elif self.type =='naive-ml':
                 
@@ -102,7 +103,7 @@ class model_object:
                 #ml learner for the nuisance function g0(X)=E[Y-Dθ0|X]:
                 self.ml_g = clone(learner_reg)            
                 
-                self.model_obj = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m, self.ml_g, n_folds=2, apply_cross_fitting=True, score=non_orth_score_w_g)
+                self.model_obj = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m, self.ml_g, n_folds = self.n_folds, score=non_orth_score_w_g)
                 
             else:
                 raise ValueError("model type not found.")
@@ -119,11 +120,11 @@ class model_object:
             exog = [i for i in data.columns if i.lower().startswith('x')] + ['const'] 
             
             res_D_on_X = OLS(endog=data.loc[:,'d'], exog = data.loc[:,exog]).fit().resid 
-            
-            res_Y_on_X = OLS(endog=data.loc[:,'y'], exog = data.loc[:,exog]).fit().resid 
             data.loc[:,'res_D_on_X'] = res_D_on_X
             
-            self.model_obj = OLS(endog=res_Y_on_X, exog = data.loc[:, ['res_D_on_X','const']] )  
+            res_Y_on_X = OLS(endog=data.loc[:,'y'], exog = data.loc[:,exog]).fit().resid 
+            
+            self.model_obj = OLS(endog = res_Y_on_X, exog = data.loc[:, ['res_D_on_X','const']] )  
           
         if self.type =='2sls':
 
@@ -140,7 +141,7 @@ class model_object:
     
     def tune(self, param_grids, **kwargs):        
         if self.type_dml:
-           self.model_obj.tune(param_grids, **kwargs)
+           self.model_obj.tune(param_grids, n_folds_tune = self.n_folds, **kwargs)
          
        
     def fit(self):
