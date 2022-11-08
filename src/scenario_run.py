@@ -2,8 +2,8 @@
 # pip install numpy pandas doubleml datetime matplotlib
 
 # set run paramters
-SAVE_OUTPUT = 0 # default: 1. Save the output of the script.
-SCENARIOS   = [1] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
+SCENARIOS   = [1, 2, 3, 4] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
@@ -16,7 +16,7 @@ n_fold= 2    # Number of folds for ML model cross-fitting.
 TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
 # models to consider using the first replication.
 OLS_     = 1 # estimate the OLS model.
-OLS_PO_  = 1 # estimate the OLS partialed-out model.
+OLS_PO_  = 0 # estimate the OLS partialed-out model.
 TWO_SLS_ = 1 # estimate the 2SLS model.
 NAIVE_ML_= 1 # estimate the naive ML model.
 DML_PLR_ = 1 # estimate the DML-PLR model.

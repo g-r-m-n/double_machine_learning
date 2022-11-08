@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.10) (preloaded format=pdflatex 2022.11.3)  4 NOV 2022 13:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.10) (preloaded format=pdflatex 2022.11.3)  8 NOV 2022 10:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -591,81 +591,128 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 LaTeX Warning: No \author given.
 
+
+LaTeX Warning: Citation `Cher2018' on page 1 undefined on input line 60.
+
+
+LaTeX Warning: Citation `Cher2018' on page 1 undefined on input line 81.
+
+
+LaTeX Warning: Citation `frisch1933' on page 1 undefined on input line 91.
+
+
+LaTeX Warning: Citation `Lovell1963' on page 1 undefined on input line 91.
+
+
+LaTeX Warning: Citation `Lovell2008' on page 1 undefined on input line 91.
+
+
+LaTeX Warning: Citation `rob1988' on page 1 undefined on input line 91.
+
 [1
 
 {C:/Users/G/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
 
-Package hyperref Warning: Suppressing link with empty target on input line 105.
+Package hyperref Warning: Suppressing link with empty target on input line 107.
 
 
 
-Package hyperref Warning: Suppressing link with empty target on input line 105.
+Package hyperref Warning: Suppressing link with empty target on input line 107.
 
 
 
-Package hyperref Warning: Suppressing link with empty target on input line 113.
+LaTeX Warning: Citation `Cher2018' on page 2 undefined on input line 108.
 
+
+Package hyperref Warning: Suppressing link with empty target on input line 115.
+
+
+
+LaTeX Warning: Citation `Cher2018' on page 2 undefined on input line 117.
+
+
+LaTeX Warning: Citation `Bach2022' on page 2 undefined on input line 134.
+
+
+LaTeX Warning: Citation `Bach2021' on page 2 undefined on input line 134.
+
+
+LaTeX Warning: Citation `Cher2018' on page 2 undefined on input line 160.
 
 [2]
-<C:/DEV/DML/src/data//20221103/plots/Scenario1.pdf, id=126, 963.64392pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221103/plots/Scenario1.pdf Graphic file (type pdf)
+<C:/DEV/DML/src/data//20221107/plots/Scenario1.pdf, id=92, 963.64392pt x 928.26
+86pt>
+File: C:/DEV/DML/src/data//20221107/plots/Scenario1.pdf Graphic file (type pdf)
 
-<use C:/DEV/DML/src/data//20221103/plots/Scenario1.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221103/plots/Scenario1.pdf  use
-d on input line 182.
+<use C:/DEV/DML/src/data//20221107/plots/Scenario1.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221107/plots/Scenario1.pdf  use
+d on input line 184.
 (pdftex.def)             Requested size: 324.12762pt x 312.2219pt.
- (C:/DEV/DML/src/data//20221103/tables/Scenario1.tex) [3 <C:/DEV/DML/src/data//
-20221103/plots/Scenario1.pdf>]
-<C:/DEV/DML/src/data//20221103/plots/Scenario2.pdf, id=164, 943.19252pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221103/plots/Scenario2.pdf Graphic file (type pdf)
+ (C:/DEV/DML/src/data//20221107/tables/Scenario1.tex) [3 <C:/DEV/DML/src/data//
+20221107/plots/Scenario1.pdf>]
 
-<use C:/DEV/DML/src/data//20221103/plots/Scenario2.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221103/plots/Scenario2.pdf  use
-d on input line 213.
+LaTeX Warning: Citation `Bell2017' on page 4 undefined on input line 195.
+
+<C:/DEV/DML/src/data//20221107/plots/Scenario2.pdf, id=129, 943.19252pt x 928.2
+686pt>
+File: C:/DEV/DML/src/data//20221107/plots/Scenario2.pdf Graphic file (type pdf)
+
+<use C:/DEV/DML/src/data//20221107/plots/Scenario2.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221107/plots/Scenario2.pdf  use
+d on input line 215.
+(pdftex.def)             Requested size: 324.12762pt x 318.9924pt.
+(C:/DEV/DML/src/data//20221107/tables/Scenario2.tex [4])
+
+LaTeX Warning: Citation `Cher2015' on page 5 undefined on input line 225.
+
+[5 <C:/DEV/DML/src/data//20221107/plots/Scenario2.pdf>]
+<C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf, id=176, 943.19252pt x 928.2
+686pt>
+File: C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf Graphic file (type pdf)
+
+<use C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf  use
+d on input line 247.
 (pdftex.def)             Requested size: 324.12762pt x 318.9924pt.
 
-(C:/DEV/DML/src/data//20221103/tables/Scenario2.tex [4]) [5 <C:/DEV/DML/src/dat
-a//20221103/plots/Scenario2.pdf>]
-<C:/DEV/DML/src/data//20221103/plots/Scenario3.pdf, id=214, 943.19252pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221103/plots/Scenario3.pdf Graphic file (type pdf)
+(C:/DEV/DML/src/data//20221107/tables/Scenario3.tex) [6 <C:/DEV/DML/src/data//2
+0221107/plots/Scenario3.pdf>]
 
-<use C:/DEV/DML/src/data//20221103/plots/Scenario3.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221103/plots/Scenario3.pdf  use
-d on input line 245.
+LaTeX Warning: Citation `Farb2020' on page 7 undefined on input line 258.
+
+File: C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf Graphic file (type pdf)
+
+<use C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221107/plots/Scenario3.pdf  use
+d on input line 277.
 (pdftex.def)             Requested size: 324.12762pt x 318.9924pt.
+(C:/DEV/DML/src/data//20221107/tables/Scenario3.tex) [7] (appendix.tex)
 
-(C:/DEV/DML/src/data//20221103/tables/Scenario3.tex) [6 <C:/DEV/DML/src/data//2
-0221103/plots/Scenario3.pdf>]
-<C:/DEV/DML/src/data//20221103/plots/Scenario4.pdf, id=256, 953.41823pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221103/plots/Scenario4.pdf Graphic file (type pdf)
-
-<use C:/DEV/DML/src/data//20221103/plots/Scenario4.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221103/plots/Scenario4.pdf  use
-d on input line 275.
-(pdftex.def)             Requested size: 324.12762pt x 315.57883pt.
-
-(C:/DEV/DML/src/data//20221103/tables/Scenario4.tex) [7 <C:/DEV/DML/src/data//2
-0221103/plots/Scenario4.pdf>] (appendix.tex) 
 AED: lastpage setting LastPage
 [8] (DML_study.aux)
 
+LaTeX Warning: There were undefined references.
+
+
 LaTeX Warning: There were multiply-defined labels.
 
-Package rerunfilecheck Info: File `DML_study.out' has not changed.
-(rerunfilecheck)             Checksum: BBF3AD906A5F46DAD840026F0D4F97A7;2371.
+
+Package rerunfilecheck Warning: File `DML_study.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `DML_study.out':
+(rerunfilecheck)             Before: 85461C86E1BFB721559E97CDBE5BBFBB;1947
+(rerunfilecheck)             After:  BBF3AD906A5F46DAD840026F0D4F97A7;2371.
  ) 
 Here is how much of TeX's memory you used:
- 13019 strings out of 475380
- 211012 string characters out of 2778660
- 577432 words of memory out of 3000000
- 34146 multiletter control sequences out of 15000+600000
+ 13004 strings out of 475380
+ 210400 string characters out of 2778660
+ 574776 words of memory out of 3000000
+ 34132 multiletter control sequences out of 15000+600000
  479973 words of font info for 69 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 72i,14n,79p,397b,526s stack positions out of 10000i,1000n,20000p,200000b,80000s
+ 72i,14n,79p,397b,525s stack positions out of 10000i,1000n,20000p,200000b,80000s
 <C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx
 10.pfb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
 /cmbx12.pfb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
@@ -688,9 +735,9 @@ sers/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><
 C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti9.p
 fb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbol
 s/msbm10.pfb>
-Output written on DML_study.pdf (8 pages, 356984 bytes).
+Output written on DML_study.pdf (8 pages, 335429 bytes).
 PDF statistics:
- 402 PDF objects out of 1000 (max. 8388607)
+ 341 PDF objects out of 1000 (max. 8388607)
  52 named destinations out of 1000 (max. 500000)
- 165 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 128 words of extra memory for PDF output out of 10000 (max. 10000000)
 
