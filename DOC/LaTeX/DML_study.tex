@@ -42,7 +42,7 @@
 \rhead{}
 % set input path to plots and table folders:
 \newcommand*{\InputsFolderPath}{C:/DEV/DML/src/data/}
-\newcommand*{\InputsPath}{\InputsFolderPath/20221107}
+\newcommand*{\InputsPath}{\InputsFolderPath/20221108}
 %
 \title{Double/Debiased Machine Learning comparison study}
 % Document
@@ -160,12 +160,12 @@ where $t_0$ is a function that maps D and X to $\mathbb{R}$.
 The Scenario 1 represents the case of a PLR model and we use the following DGP for $i=1,...,n$ \cite{Cher2018}.
 \begin{eqnarray*}\label{dgp_1.1}
 y_i &=& \theta d_i + g_0(x_i) + s_2 \zeta_i, \\
-\zeta_i &\sim& \mathcal{N}(0,1),\\
 d_i &=& m_0(x_i) + s_1 v_i, \\
-v_i &\sim& \mathcal{N}(0,1),\\
-x_i &\sim& \mathcal{N}(0, \Sigma)
+x_i &\sim& \mathcal{N}(0, \Sigma),\\
+\zeta_i &\sim& \mathcal{N}(0,1),\\
+v_i &\sim& \mathcal{N}(0,1),
 \end{eqnarray*}
-where $d_i, v_i, y_i$ and $\zeta_i$ are the $i^{th}$ entries of $D,V,V,Y$ and $\zeta$, respectively.
+where $d_i, v_i, y_i$ and $\zeta_i$ are the $i^{th}$ entries of $D,V,Y$ and $\zeta$, respectively.
 $ \mathcal{N}(\mu_n, \Sigma_n)$ represents the normal distribution with mean value $\mu_n$ and variance $\Sigma_n$.
 Note that  $\mu_n$ can be a vector and $\Sigma_n$ is in this case a variance-covariance matrix.
 $x_i$ is the $(k \times 1)$ vector of row $i$ from matrix $X$.
@@ -177,8 +177,11 @@ g_0(x_i) &=& b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3}.
 \end{eqnarray*}
 We use the following parameter values: $a_0=1, a_1=0.25, s_1=1, b_0=1, b_1=0.25$ and $s_2=1$.
 Note that the nuisance functions $m_0$ and $g_0$ are non-linear in $x_i$.
-\subsubsection{Results}
 
+\subsubsection{Results}
+The Figure \ref{Scenario 1} shows the true and estimated treatment effects per replication for Scenario 1. 
+The error bars represent the upper and lower bound of the 95\% confidence interval of the estimate. 
+The red line represents the true value of the treatment effect.
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[width=.65\columnwidth]{\InputsPath/plots/Scenario1.pdf}
@@ -186,6 +189,11 @@ Note that the nuisance functions $m_0$ and $g_0$ are non-linear in $x_i$.
 		\label{Scenario 1}
 	\end{center}
 \end{figure}
+We find that the DML-PLR and the OLS model tend to recover the treatment effect overall similarly in terms of how accurate the point estimates are and of how wider the confidence intervals are.
+The NAIVE-ML model has the tendency to overfitted the treatment effect.
+
+Table \ref{Scenario1} shows the root mean squared error (RMSE), the mean absolute error (MAE) and the bias of estimated treatment effect and the true value across the replications for the compared models.
+The last row indicates which model performs best according to RMSE, MAE or bias.
 \input{\InputsPath/tables/Scenario1}
 
 
@@ -195,8 +203,8 @@ The Scenario 2 represents the case of a IRM model and we use the following DGP f
 The data generating process is based on a the simulation experiment in \cite{Bell2017}.
 \begin{eqnarray*}\label{dgp_3.1}
 	y_i &=& \theta d_i + c_y x_i' \beta d_i + \zeta_i, \\
-	\zeta_i &\sim& \mathcal{N}(0,1), \\	
 	d_i &=& 1\left\lbrace \frac{\exp(c_d x_i' \beta)}{1+\exp(c_d x_i' \beta)} > v_i \right\rbrace, \\
+	\zeta_i &\sim& \mathcal{N}(0,1), \\	
 	v_i
 	&\sim& \mathcal{U}(0,1),\\
 	x_i &\sim& \mathcal{N}(0, \Sigma),
@@ -274,12 +282,12 @@ Note that the endogeneity of $D$ comes from the non-zero correlation of $u_i$ an
 \subsubsection{Results}
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[width=.65\columnwidth]{\InputsPath/plots/Scenario3.pdf}
+		\includegraphics[width=.65\columnwidth]{\InputsPath/plots/Scenario4.pdf}
 		\caption{True and estimated treatment effects per replication for Scenario 4. The error bars represent the upper and lower bound of the 95\% confidence interval of the estimate. The red line represents the true value of the treatment effect.}
 		\label{Scenario 4}
 	\end{center}
 \end{figure}
-\input{\InputsPath/tables/Scenario3}
+\input{\InputsPath/tables/Scenario4}
 
 \section{Conclusion}
 

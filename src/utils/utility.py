@@ -8,7 +8,10 @@ from sklearn.base import clone
 import numpy as np
 import os
 import pandas as pd
-
+from scipy.linalg import toeplitz
+_array_alias = ['array', 'np.ndarray', 'np.array', np.ndarray]
+_data_frame_alias = ['DataFrame', 'pd.DataFrame', pd.DataFrame]
+_dml_data_alias = ['DoubleMLData', dml.DoubleMLData]
 
 class model_object:
     
@@ -45,6 +48,19 @@ class model_object:
                     self.ml_m = clone(learner_reg)
                 
                 self.model_obj  = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m, n_folds = self.n_folds)
+
+            elif self.type == 'dml-irm':
+                
+                obj_dml_data = dml.DoubleMLData(data, 'y', 'd')
+                
+                #ml learner for the nuisance function g0(X)=E[Y-Dθ0|X]:
+                self.ml_g = clone(learner_reg)
+                
+                #ml learner for the nuisance function m0(X)=E[D|X]:
+                self.ml_m = clone(learner_class)
+                
+                self.model_obj = dml.DoubleMLIRM(obj_dml_data, self.ml_g, self.ml_m, n_folds = self.n_folds)
+                
             elif self.type == 'dml-pliv':
                 
                 obj_dml_data = dml.DoubleMLData(data, 'y', 'd', z_cols=iv_vars)
@@ -59,18 +75,6 @@ class model_object:
                 self.ml_r = clone(learner_reg)
                 
                 self.model_obj = dml.DoubleMLPLIV(obj_dml_data, self.ml_l, self.ml_m, self.ml_r, n_folds = self.n_folds)
-                
-            elif self.type == 'dml-irm':
-                
-                obj_dml_data = dml.DoubleMLData(data, 'y', 'd')
-                
-                #ml learner for the nuisance function g0(X)=E[Y-Dθ0|X]:
-                self.ml_g = clone(learner_reg)
-                
-                #ml learner for the nuisance function m0(X)=E[D|X]:
-                self.ml_m = clone(learner_class)
-                
-                self.model_obj = dml.DoubleMLIRM(obj_dml_data, self.ml_g, self.ml_m, n_folds = self.n_folds)
                 
             elif self.type == 'dml-iiv':
 
@@ -174,7 +178,7 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
     for ix_m, m in enumerate(model_index):
         model_name= m.lower()
         y = results_rep['coef_'+model_name]
-        asymmetric_error = [results_rep['lower_bound_'+model_name].values-y, y-results_rep['upper_bound_'+model_name].values]
+        asymmetric_error = [abs(results_rep['lower_bound_'+model_name].values-y), abs(y-results_rep['upper_bound_'+model_name].values)]
         
         axes[ix_m].errorbar(x, y, yerr=asymmetric_error, fmt='o')
         axes[ix_m].set_title(m.upper(), fontsize=16)
@@ -199,7 +203,7 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
     plt.show()
     
     
-def save_to_tex(df, output_folder_file_path, column_format='', caption='', label='', index=False, longtable=True):
+def save_to_tex(df, output_folder_file_path, column_format='', caption='', label='', index=False):
     """
     Save a data table to LaTeX in the local folder.
     :param df: (dataframe) dataframe to be saved.
@@ -208,7 +212,6 @@ def save_to_tex(df, output_folder_file_path, column_format='', caption='', label
     :param caption: (string) the caption to be shown in LaTeX of the table to be saved.
     :param label: (string) the label to be shown in LaTeX of the table to be saved.
     :param index: (boolean) indicating whether the index of the dataframe should be saved.
-    :param longtable: (boolean) indicating whether the dataframe should be saved in long format in LaTeX.
     :return True: (boolean)  .
     """
     df= df.copy()
@@ -232,10 +235,14 @@ def save_to_tex(df, output_folder_file_path, column_format='', caption='', label
         else:
             df_index_names  = ['Index'] 
         column_format = [ 'L{'+str(len(i)/1.5)+'cm}' for i in  df_index_names ] +column_format
+    else:
+        df = df.reset_index(drop=True)
+    df = df.fillna('')   
+    pd.options.styler.format.precision =4
     # transform to string:
     column_format = ''.join(column_format)
     with open(output_folder_file_path+ '.tex', 'w') as texf:
-        texf.write(df.to_latex(column_format=column_format, label=label,caption=caption, position='H', longtable=longtable, index=index,na_rep=''))
+        texf.write(df.style.to_latex(column_format=column_format, label=label,caption=caption, position='H',hrules= True, position_float= "centering"))
     return True
     
    
@@ -271,3 +278,83 @@ def non_orth_score_w_g(y, d, l_hat, m_hat, g_hat, smpls, *kwargs):
     psi_a = -np.multiply(d, d)
     psi_b = np.multiply(d, u_hat)
     return psi_a, psi_b
+
+
+def make_irm_data_ext(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, s=1, return_type='DoubleMLData'):
+    """
+    Generates data from a interactive regression (IRM) model.
+    The data generating process is defined as
+
+    .. math::
+
+        d_i &= 1\\left\\lbrace \\frac{\\exp(c_d x_i' \\beta)}{1+\\exp(c_d x_i' \\beta)} > v_i \\right\\rbrace, & &v_i
+        \\sim \\mathcal{U}(0,1),
+
+        y_i &= \\theta d_i + c_y x_i' \\beta d_i + \\zeta_i, & &\\zeta_i \\sim \\mathcal{N}(0,1),
+
+    with covariates :math:`x_i \\sim \\mathcal{N}(0, \\Sigma)`, where  :math:`\\Sigma` is a matrix with entries
+    :math:`\\Sigma_{kj} = 0.5^{|j-k|}`.
+    :math:`\\beta` is a `dim_x`-vector with entries :math:`\\beta_j=\\frac{1}{j^2}` and the constants :math:`c_y` and
+    :math:`c_d` are given by
+
+    .. math::
+
+        c_y = \\sqrt{\\frac{R_y^2}{(1-R_y^2) \\beta' \\Sigma \\beta}}, \\qquad c_d =
+        \\sqrt{\\frac{(\\pi^2 /3) R_d^2}{(1-R_d^2) \\beta' \\Sigma \\beta}}.
+
+    The data generating process is inspired by a process used in the simulation experiment (see Appendix P) of Belloni
+    et al. (2017).
+
+    Parameters
+    ----------
+    n_obs :
+        The number of observations to simulate.
+    dim_x :
+        The number of covariates.
+    theta :
+        The value of the causal parameter.
+    R2_d :
+        The value of the parameter :math:`R_d^2`.
+    R2_y :
+        The value of the parameter :math:`R_y^2`.
+    return_type :
+        If ``'DoubleMLData'`` or ``DoubleMLData``, returns a ``DoubleMLData`` object.
+
+        If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
+
+        If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d)``.
+
+    References
+    ----------
+    Belloni, A., Chernozhukov, V., Fernández‐Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With
+    High‐Dimensional Data. Econometrica, 85: 233-298.
+    """
+    # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723, see suplement
+    v = np.random.uniform(size=[n_obs, ])
+    zeta = np.random.standard_normal(size=[n_obs, ])
+
+    cov_mat = toeplitz([np.power(0.5, k) for k in range(dim_x)])
+    x = np.random.multivariate_normal(np.zeros(dim_x), cov_mat, size=[n_obs, ])
+
+    beta = [1 / (k**2) for k in range(1, dim_x + 1)]
+    b_sigma_b = np.dot(np.dot(cov_mat, beta), beta)
+    c_y = np.sqrt(R2_y/((1-R2_y) * b_sigma_b))
+    c_d = np.sqrt(np.pi**2 / 3. * R2_d/((1-R2_d) * b_sigma_b))
+
+    xx = np.exp(np.dot(x, np.multiply(beta, c_d)))
+    d = 1. * ((xx/(1+xx)) > v)
+
+    y = d * theta + d * np.dot(x, np.multiply(beta, c_y)) + s * zeta
+
+    if return_type in _array_alias:
+        return x, y, d
+    elif return_type in _data_frame_alias + _dml_data_alias:
+        x_cols = [f'X{i + 1}' for i in np.arange(dim_x)]
+        data = pd.DataFrame(np.column_stack((x, y, d)),
+                            columns=x_cols + ['y', 'd'])
+        if return_type in _data_frame_alias:
+            return data
+        else:
+            return dml.DoubleMLData(data, 'y', 'd', x_cols)
+    else:
+        raise ValueError('Invalid return_type.')

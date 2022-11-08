@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering
+\caption{Root mean squared error (RMSE), mean absolute error (MAE) and bias of estimated treatment effect and the true value across the replications for the compared models. The last row indicates which model performs best according to RMSE, MAE or bias.}
+\label{Scenario2}
+\begin{tabular}{L{3.3333333333333335cm}L{2.6666666666666665cm}R{2.0cm}R{2.6666666666666665cm}}
+\toprule
+ & RMSE & MAE & Bias \\
+\midrule
+OLS & 0.0854 & 0.0699 & -0.0269 \\
+NAIVE-ML & 0.0922 & 0.0710 & 0.0350 \\
+DML-PLR & 0.0809 & 0.0671 & -0.0174 \\
+DML-IRM & 0.1306 & 0.1094 & 0.0979 \\
+Best & DML-PLR & DML-PLR & DML-PLR \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -2,8 +2,8 @@
 # pip install numpy pandas doubleml datetime matplotlib
 
 # set run paramters
-SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
-SCENARIOS   = [1, 2, 3, 4] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SAVE_OUTPUT = 0 # default: 1. Save the output of the script.
+SCENARIOS   = [2,] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
@@ -18,17 +18,17 @@ TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation
 OLS_     = 1 # estimate the OLS model.
 OLS_PO_  = 0 # estimate the OLS partialed-out model.
 TWO_SLS_ = 1 # estimate the 2SLS model.
-NAIVE_ML_= 1 # estimate the naive ML model.
+NAIVE_ML_= 0 # estimate the naive ML model.
 DML_PLR_ = 1 # estimate the DML-PLR model.
-DML_PLIV_= 1 # estimate the DML-PLIV model.
 DML_IRM_ = 1 # estimate the DML-IRM model.
+DML_PLIV_= 1 # estimate the DML-PLIV model.
 DML_IIV_ = 1 # estimate the DML-IIV model.
 
 
 # load libraries
 import numpy as np
 import pandas as pd
-from doubleml.datasets import make_iivm_data, make_pliv_CHS2015, make_plr_CCDDHNR2018, make_irm_data
+from doubleml.datasets import make_iivm_data, make_pliv_CHS2015, make_plr_CCDDHNR2018
 import sys, os, json
 from datetime import date
 
@@ -58,7 +58,7 @@ np.random.seed(4444)
 
 # specify the parameter grids for tuning:
 if TUNE_MODEL:
-    grid_list = [{'n_estimators': [400], 'max_features': [5, 10, 15, 20], 'max_depth': [2, 3, 4, 5], 'min_samples_leaf': [ 2, 4, 6]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
+    grid_list = [{'n_estimators': [100], 'max_features': [5, 10, 15, 20], 'max_depth': [2, 3, 4, 5], 'min_samples_leaf': [ 2, 4, 6]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
     param_grids = dict()
     param_grids['ml_g'] = grid_list
     param_grids['ml_m'] = grid_list
@@ -71,13 +71,13 @@ for SCENARIO in SCENARIOS:
     print('\n-----------------------------------------------------------------------')
     print('\nRunning Scenario %s'%SCENARIO)
     if SCENARIO   == 1:
-        IV_DGP = 0; NON_LINEAR_DGP = 0 
+        IV_DGP = 0; NON_LINEAR_DGP = 0; n_fold= 2 
     elif SCENARIO == 2:
-        IV_DGP = 0; NON_LINEAR_DGP = 1 
+        IV_DGP = 0; NON_LINEAR_DGP = 1; n_fold= 5  
     elif SCENARIO == 3:
-        IV_DGP = 1; NON_LINEAR_DGP = 0 
+        IV_DGP = 1; NON_LINEAR_DGP = 0; n_fold= 2  
     elif SCENARIO == 4:
-        IV_DGP = 1; NON_LINEAR_DGP = 1
+        IV_DGP = 1; NON_LINEAR_DGP = 1; n_fold= 5 
         
     # %% model specification
     
@@ -92,10 +92,10 @@ for SCENARIO in SCENARIOS:
         model_index.append('NAIVE-ML') 
     if DML_PLR_:
         model_index.append('DML-PLR')      
-    if DML_PLIV_ and IV_DGP :
-        model_index.append('DML-PLIV') 
     if DML_IRM_ and NON_LINEAR_DGP:
-        model_index.append('DML-IRM')      
+        model_index.append('DML-IRM')   
+    if DML_PLIV_ and IV_DGP :
+        model_index.append('DML-PLIV')         
     if DML_IIV_ and IV_DGP and NON_LINEAR_DGP:
         model_index.append('DML-IIV')
         
@@ -111,19 +111,22 @@ for SCENARIO in SCENARIOS:
             results_rep.loc[i_rep,'rep'] = i_rep+1
             # Generate data
             # linear DGP    
-            if not NON_LINEAR_DGP and not IV_DGP:
-                data = make_plr_CCDDHNR2018(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1, a_1 = 0.25, s_1 = 1, b_0 = 1, b_1 = 0.25, s_2 = 1) #a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 1) #
+            if (not NON_LINEAR_DGP) and (not IV_DGP):
+                data = make_plr_CCDDHNR2018(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', #a_0 = 1, a_1 = 0.25, s_1 = 1, b_0 = 1, b_1 = 0.25, s_2 = 1) 
+                                            a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3) #
             # non-linear DGP    
-            elif NON_LINEAR_DGP and not IV_DGP:
-                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x, R2_d=0.5, R2_y=0.5, return_type='DataFrame')                  
+            elif NON_LINEAR_DGP and (not IV_DGP):
+                data = make_irm_data_ext(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  #, R2_d=0.5, R2_y=0.5   )   
+                                     , R2_d=0.5, R2_y=0.5 , s=1  )  
             # linear IV DGP    
-            elif not NON_LINEAR_DGP and IV_DGP:
+            elif (not NON_LINEAR_DGP) and IV_DGP:
                 data = make_pliv_CHS2015(alpha=theta, n_obs=n_obs, dim_x=dim_x, dim_z=1, return_type='DataFrame')        
             # non-linear IV DGP
             elif NON_LINEAR_DGP and IV_DGP:
                 data = make_iivm_data(theta=theta, n_obs=n_obs, dim_x=dim_x, alpha_x=1.0, return_type='DataFrame')
-        
+            
                 
+            
             # print data descriptions:
             if PRINT:
                 print(data.describe())
@@ -156,8 +159,9 @@ for SCENARIO in SCENARIOS:
                     else:
                         #tune the parameters
                         #Note that the parameter are tuned globally, i.e., across folds but are stored per fold, whereas each set of paramters is the same per fold.
-                        print('\nTune hyper-parameters ...')
+                        print('\nTune hyper-parameters for %s ...'%m)
                         model_object_m.tune(param_grids)   
+                        print('\nCompleted tuning.')
                         tuned_params = model_object_m.model_obj.params
                         # save 
                         with open(file_name_tuned_parameters, "w") as fp:
@@ -200,7 +204,7 @@ for SCENARIO in SCENARIOS:
         res_stats = get_res_stats(results_rep, model_index, theta)
         # save res_stats
         if SAVE_OUTPUT:
-            save_to_tex(res_stats, output_folder_tables+'Scenario'+str(SCENARIO), caption='Scenario '+str(SCENARIO), label ='Scenario'+str(SCENARIO), index=True, longtable=False)  
+            save_to_tex(res_stats, output_folder_tables+'Scenario'+str(SCENARIO), caption='Root mean squared error (RMSE), mean absolute error (MAE) and bias of estimated treatment effect and the true value across the replications for the compared models. The last row indicates which model performs best according to RMSE, MAE or bias.', label ='Scenario'+str(SCENARIO), index=True)  
     
     print('\n-----------------------------------------------------------------------')
     
