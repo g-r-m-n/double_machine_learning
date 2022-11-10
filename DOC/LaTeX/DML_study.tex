@@ -71,11 +71,11 @@ Doing so helps for an easily understandable description of the approach.
 We will relax the assumption of linear additivity in next subsection below.}
 $ E[V|X]$ denotes the expected value of the variable $V$ given the variables $X$.
 	
-Note that we cannot estimate $g_0$ from Equation \eqref{dml_plr_1} alone, as we explain in detail below. 
-Let denote such an approach as naive approach.
-In such a naive approach, we would for example iterate until convergence between updating $g_0$ using $Y - D \theta_0 = g_0(X) + U$ and updating $\theta_0$ using $Y - g_0(X) = D \theta_0 + U$. 
+Note that we cannot estimate $g_0$ from Equation \eqref{dml_plr_1} alone. 
 The reason is that not only $g_0$ is a function of $X$ but also $D$ is via \eqref{dml_plr_2}. 
-Therefore an estimate of $g_0$ from the above outlined naive approach would be biased as it does not account for the fact that $Y - D \theta_0$ is depended of $X$, i.e., $ m_0(X) = E[X|D] $.
+Denote the approach where we estimate $g_0$ from Equation \eqref{dml_plr_1} alone as naive approach.
+The in the naive approach, we would for example iterate until convergence between updating $g_0$ using $Y - D \theta_0 = g_0(X) + U$ and updating $\theta_0$ using $Y - g_0(X) = D \theta_0 + U$. 
+An estimate of $g_0$ from the naive approach would be biased as it does not account for the fact that $Y - D \theta_0$ is depended of $X$, i.e., $ m_0(X) = E[X|D] $.
 However $ g_0(X) \ne E[Y|X] $ because $Y$ depends also on $D \theta_0$.
 
 \cite{Cher2018} propose an algorithm to estimate the treatment effect parameter $\theta_0$ from the PLR model from above unbiased and $n^{-1/2}$ root consistent using machine learning (ML) to assess $g_0$ and $m_0$ if the ML estimators are at least  $n^{-1/4}$ root consistent.  

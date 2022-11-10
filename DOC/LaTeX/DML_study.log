@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.10) (preloaded format=pdflatex 2022.11.3)  8 NOV 2022 17:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.10) (preloaded format=pdflatex 2022.11.3)  9 NOV 2022 15:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -607,7 +607,7 @@ Package hyperref Warning: Suppressing link with empty target on input line 115.
 
 
 [2]
-<C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf, id=127, 963.64392pt x 928.2
+<C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf, id=128, 963.64392pt x 928.2
 686pt>
 File: C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf Graphic file (type pdf)
 
@@ -617,7 +617,7 @@ d on input line 187.
 (pdftex.def)             Requested size: 324.12762pt x 312.2219pt.
  [3] (C:/DEV/DML/src/data//20221108/tables/Scenario1.tex) [4 <C:/DEV/DML/src/da
 ta//20221108/plots/Scenario1.pdf>]
-<C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf, id=171, 943.19252pt x 928.2
+<C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf, id=172, 943.19252pt x 928.2
 686pt>
 File: C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf Graphic file (type pdf)
 
@@ -628,7 +628,7 @@ d on input line 223.
 
 (C:/DEV/DML/src/data//20221108/tables/Scenario2.tex) [5 <C:/DEV/DML/src/data//2
 0221108/plots/Scenario2.pdf>]
-<C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf, id=214, 943.19252pt x 928.2
+<C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf, id=215, 943.19252pt x 928.2
 686pt>
 File: C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf Graphic file (type pdf)
 
@@ -639,7 +639,7 @@ d on input line 255.
 
 (C:/DEV/DML/src/data//20221108/tables/Scenario3.tex [6]) [7 <C:/DEV/DML/src/dat
 a//20221108/plots/Scenario3.pdf>]
-<C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf, id=264, 943.19252pt x 928.2
+<C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf, id=265, 943.19252pt x 928.2
 686pt>
 File: C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf Graphic file (type pdf)
 
@@ -688,9 +688,9 @@ sers/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><
 C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti9.p
 fb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbol
 s/msbm10.pfb>
-Output written on DML_study.pdf (9 pages, 360348 bytes).
+Output written on DML_study.pdf (9 pages, 360561 bytes).
 PDF statistics:
- 407 PDF objects out of 1000 (max. 8388607)
+ 408 PDF objects out of 1000 (max. 8388607)
  53 named destinations out of 1000 (max. 500000)
  165 words of extra memory for PDF output out of 10000 (max. 10000000)
 

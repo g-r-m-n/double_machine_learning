@@ -57,10 +57,7 @@ class model_object:
                 self.ml_g = clone(learner_reg)
                 
                 #ml learner for the nuisance function m0(X)=E[D|X]:
-                if len(np.unique(data['d'])) <= 10:  
-                    self.ml_m = clone(learner_class)
-                else:                    
-                    self.ml_m = clone(learner_reg)
+                self.ml_m = clone(learner_class)
                 
                 self.model_obj = dml.DoubleMLIRM(obj_dml_data, self.ml_g, self.ml_m, n_folds = self.n_folds)
                 
@@ -176,14 +173,14 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
     x = range(1,nn)
     if max_int_x is None:
         max_int_x = nn
-    if len(model_index)<2:
-        return        
-    fig, axes = plt.subplots(nrows=len(model_index), sharex=True) 
+        
+    fig, axes = plt.subplots(nrows=len(model_index), sharex=True,  squeeze=False) 
     for ix_m, m in enumerate(model_index):
         model_name= m.lower()
         y = results_rep['coef_'+model_name]
         asymmetric_error = [abs(results_rep['lower_bound_'+model_name].values-y), abs(y-results_rep['upper_bound_'+model_name].values)]
         
+        breakpoint()
         
         axes[ix_m].errorbar(x, y, yerr=asymmetric_error, fmt='o')
         axes[ix_m].set_title(m.upper(), fontsize=16)
@@ -340,7 +337,7 @@ def make_irm_data_ext(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, s=1, ret
 
     cov_mat = toeplitz([np.power(0.5, k) for k in range(dim_x)])
     x = np.random.multivariate_normal(np.zeros(dim_x), cov_mat, size=[n_obs, ])
-        
+
     beta = [1 / (k**2) for k in range(1, dim_x + 1)]
     b_sigma_b = np.dot(np.dot(cov_mat, beta), beta)
     c_y = np.sqrt(R2_y/((1-R2_y) * b_sigma_b))
@@ -348,7 +345,7 @@ def make_irm_data_ext(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, s=1, ret
 
     xx = np.exp(np.dot(x, np.multiply(beta, c_d)))
     d = 1. * ((xx/(1+xx)) > v)
-        
+
     y = d * theta + d * np.dot(x, np.multiply(beta, c_y)) + s * zeta
 
     if return_type in _array_alias:

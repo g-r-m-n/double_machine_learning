@@ -3,7 +3,7 @@
 
 # set run paramters
 SAVE_OUTPUT = 0 # default: 1. Save the output of the script.
-SCENARIOS   = [1,2,3,4] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   = [2,] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
@@ -11,17 +11,17 @@ n_rep = 30   #default: 1000 number of repetitions.
 PRINT = 0    # print (intermediate) results.
 theta = 0.5  # true ATE parameter.
 n_obs = 1000 # number of observations.
-dim_x = 20 # Number of explanatory (confunding) varOiables.
+dim_x = 20   # Number of explanatory (confunding) variables.
 n_fold= 2    # Number of folds for ML model cross-fitting.
 TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
-FORCE_TUING_1 = 1 # default: 0. Force tuning at the first repetition.
+FORCE_TUING_1 = 0 # default: 0. Force tuning at the first repetition.
 # models to consider using the first replication.
 OLS_     = 1 # estimate the OLS model.
 OLS_PO_  = 0 # estimate the OLS partialed-out model.
 TWO_SLS_ = 1 # estimate the 2SLS model.
-NAIVE_ML_= 1 # estimate the naive ML model.
-DML_PLR_ = 1 # estimate the DML-PLR model.
-DML_IRM_ = 1 # estimate the DML-IRM model.
+NAIVE_ML_= 0 # estimate the naive ML model.
+DML_PLR_ = 0 # estimate the DML-PLR model.
+DML_IRM_ = 0 # estimate the DML-IRM model.
 DML_PLIV_= 1 # estimate the DML-PLIV model.
 DML_IIV_ = 1 # estimate the DML-IIV model.
 
@@ -59,26 +59,26 @@ np.random.seed(4444)
 
 # specify the parameter grids for tuning:
 if TUNE_MODEL:
-    grid_list = [{'n_estimators': [100], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
+    grid_list = [{'n_estimators': [100], 'max_features': [5, 10, 15, 20], 'max_depth': [2, 3, 4, 5], 'min_samples_leaf': [ 2, 4, 6]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
     param_grids = dict()
     param_grids['ml_g'] = grid_list
     param_grids['ml_m'] = grid_list
     param_grids['ml_l'] = grid_list
     param_grids['ml_r'] = grid_list
     
-# %% run scenarios:
+# run scenarios:
     
 for SCENARIO in SCENARIOS:
     print('\n-----------------------------------------------------------------------')
     print('\nRunning Scenario %s'%SCENARIO)
     if SCENARIO   == 1:
-        IV_DGP = 0; NON_LINEAR_DGP = 0; #n_fold= 2 
+        IV_DGP = 0; NON_LINEAR_DGP = 0; n_fold= 2 
     elif SCENARIO == 2:
-        IV_DGP = 0; NON_LINEAR_DGP = 1; #n_fold= 5  
+        IV_DGP = 0; NON_LINEAR_DGP = 1; n_fold= 5  
     elif SCENARIO == 3:
-        IV_DGP = 1; NON_LINEAR_DGP = 0; #n_fold= 2  
+        IV_DGP = 1; NON_LINEAR_DGP = 0; n_fold= 2  
     elif SCENARIO == 4:
-        IV_DGP = 1; NON_LINEAR_DGP = 1; #n_fold= 5 
+        IV_DGP = 1; NON_LINEAR_DGP = 1; n_fold= 5 
         
     # %% model specification
     
@@ -99,8 +99,8 @@ for SCENARIO in SCENARIOS:
         model_index.append('DML-PLIV')         
     if DML_IIV_ and IV_DGP and NON_LINEAR_DGP:
         model_index.append('DML-IIV')
-            
-            
+        
+        
     # Initialize the result dataset: 
     results_rep = pd.DataFrame()
     
@@ -126,6 +126,7 @@ for SCENARIO in SCENARIOS:
             elif NON_LINEAR_DGP and IV_DGP:
                 data = make_iivm_data(theta=theta, n_obs=n_obs, dim_x=dim_x, alpha_x=1.0, return_type='DataFrame')
             
+                
             
             # print data descriptions:
             if PRINT:
@@ -142,7 +143,7 @@ for SCENARIO in SCENARIOS:
                 if TUNE_MODEL and model_object_m.type_dml:
                     file_name_tuned_parameters = path_to_data+'tuned_parameters_%s_%s.txt'%(SCENARIO,m)
                     # check if tuned parameters already exist:
-                    if (os.path.isfile(file_name_tuned_parameters)) and ((FORCE_TUING_1!=1) or (i_rep>0)): 
+                    if (os.path.isfile(file_name_tuned_parameters)) and ((FORCE_TUING_1==0) or (i_rep>0)): 
                         # reading the data from the file
                         with open(file_name_tuned_parameters) as f:
                             tuned_params = f.read()
@@ -155,8 +156,7 @@ for SCENARIO in SCENARIOS:
                                     tuned_params[i][j] =                                 [np.repeat(tuned_params[i][j][0][0],model_object_m.n_folds).tolist()]
                                 
                         # set the tuned_params
-                        if FORCE_TUING_1 != -1:
-                            model_object_m.model_obj.params.update(tuned_params)
+                        model_object_m.model_obj.params.update(tuned_params)
                     else:
                         #tune the parameters
                         #Note that the parameter are tuned globally, i.e., across folds but are stored per fold, whereas each set of paramters is the same per fold.
