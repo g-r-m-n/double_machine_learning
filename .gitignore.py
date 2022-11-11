@@ -2,17 +2,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
-
 DOC/*
 src/data/*
-
 .ipynb_checkpoints
-
 /.ipynb_checkpoints/*
 # C extensions
 *.so
-
+# Latex extensions
+.aux
+.log
+.out
 # Distribution / packaging
 .Python
 build/
