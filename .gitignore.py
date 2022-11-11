@@ -5,6 +5,8 @@ __pycache__/
 
 /DOC/*
 /src/data/*
+DOC/*
+src/data/*
 
 .ipynb_checkpoints
 
