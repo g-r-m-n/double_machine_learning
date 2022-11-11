@@ -3,8 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-/DOC/*
-/src/data/*
+
 DOC/*
 src/data/*
 
