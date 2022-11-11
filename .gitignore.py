@@ -2,8 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-DOC/**
-src/data/**
+DOC/
+DOC/*
+src/data/
+src/data/*
 .ipynb_checkpoints
 /.ipynb_checkpoints/*
 # C extensions
