@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.10) (preloaded format=pdflatex 2022.11.3)  9 NOV 2022 15:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.10) (preloaded format=pdflatex 2022.11.3)  11 NOV 2022 09:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -595,61 +595,72 @@ LaTeX Warning: No \author given.
 
 {C:/Users/G/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
 
-Package hyperref Warning: Suppressing link with empty target on input line 107.
+Package hyperref Warning: Suppressing link with empty target on input line 111.
 
 
 
-Package hyperref Warning: Suppressing link with empty target on input line 107.
+Package hyperref Warning: Suppressing link with empty target on input line 111.
 
 
 
-Package hyperref Warning: Suppressing link with empty target on input line 115.
+Package hyperref Warning: Suppressing link with empty target on input line 119.
 
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 134--139
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 140--141
+
+ []
 
 [2]
-<C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf, id=128, 963.64392pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf Graphic file (type pdf)
-
-<use C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221108/plots/Scenario1.pdf  use
-d on input line 187.
+<C:/DEV/DML/src/data//20221110//plots/Scenario1.pdf, id=131, 963.64392pt x 928.
+2686pt>
+File: C:/DEV/DML/src/data//20221110//plots/Scenario1.pdf Graphic file (type pdf
+)
+<use C:/DEV/DML/src/data//20221110//plots/Scenario1.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221110//plots/Scenario1.pdf  us
+ed on input line 194.
 (pdftex.def)             Requested size: 324.12762pt x 312.2219pt.
- [3] (C:/DEV/DML/src/data//20221108/tables/Scenario1.tex) [4 <C:/DEV/DML/src/da
-ta//20221108/plots/Scenario1.pdf>]
-<C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf, id=172, 943.19252pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf Graphic file (type pdf)
+ [3] (C:/DEV/DML/src/data//20221110//tables/Scenario1.tex) [4 <C:/DEV/DML/src/d
+ata//20221110//plots/Scenario1.pdf>]
+<C:/DEV/DML/src/data//20221110//plots/Scenario2.pdf, id=175, 956.64905pt x 945.
+61343pt>
+File: C:/DEV/DML/src/data//20221110//plots/Scenario2.pdf Graphic file (type pdf
+)
+<use C:/DEV/DML/src/data//20221110//plots/Scenario2.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221110//plots/Scenario2.pdf  us
+ed on input line 228.
+(pdftex.def)             Requested size: 324.12762pt x 320.3933pt.
 
-<use C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221108/plots/Scenario2.pdf  use
-d on input line 223.
-(pdftex.def)             Requested size: 324.12762pt x 318.9924pt.
+(C:/DEV/DML/src/data//20221110//tables/Scenario2.tex) [5 <C:/DEV/DML/src/data//
+20221110//plots/Scenario2.pdf>]
+<C:/DEV/DML/src/data//20221110//plots/Scenario3.pdf, id=219, 943.19252pt x 945.
+61343pt>
+File: C:/DEV/DML/src/data//20221110//plots/Scenario3.pdf Graphic file (type pdf
+)
+<use C:/DEV/DML/src/data//20221110//plots/Scenario3.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221110//plots/Scenario3.pdf  us
+ed on input line 263.
+(pdftex.def)             Requested size: 324.12762pt x 324.95282pt.
 
-(C:/DEV/DML/src/data//20221108/tables/Scenario2.tex) [5 <C:/DEV/DML/src/data//2
-0221108/plots/Scenario2.pdf>]
-<C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf, id=215, 943.19252pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf Graphic file (type pdf)
+(C:/DEV/DML/src/data//20221110//tables/Scenario3.tex [6]) [7 <C:/DEV/DML/src/da
+ta//20221110//plots/Scenario3.pdf>]
+<C:/DEV/DML/src/data//20221110//plots/Scenario4.pdf, id=268, 943.19252pt x 945.
+61343pt>
+File: C:/DEV/DML/src/data//20221110//plots/Scenario4.pdf Graphic file (type pdf
+)
+<use C:/DEV/DML/src/data//20221110//plots/Scenario4.pdf>
+Package pdftex.def Info: C:/DEV/DML/src/data//20221110//plots/Scenario4.pdf  us
+ed on input line 296.
+(pdftex.def)             Requested size: 324.12762pt x 324.95282pt.
 
-<use C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221108/plots/Scenario3.pdf  use
-d on input line 255.
-(pdftex.def)             Requested size: 324.12762pt x 318.9924pt.
+(C:/DEV/DML/src/data//20221110//tables/Scenario4.tex) [8 <C:/DEV/DML/src/data//
+20221110//plots/Scenario4.pdf>] (appendix.tex)
 
-(C:/DEV/DML/src/data//20221108/tables/Scenario3.tex [6]) [7 <C:/DEV/DML/src/dat
-a//20221108/plots/Scenario3.pdf>]
-<C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf, id=265, 943.19252pt x 928.2
-686pt>
-File: C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf Graphic file (type pdf)
-
-<use C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf>
-Package pdftex.def Info: C:/DEV/DML/src/data//20221108/plots/Scenario4.pdf  use
-d on input line 285.
-(pdftex.def)             Requested size: 324.12762pt x 318.9924pt.
-
-(C:/DEV/DML/src/data//20221108/tables/Scenario4.tex) [8 <C:/DEV/DML/src/data//2
-0221108/plots/Scenario4.pdf>] (appendix.tex) 
 AED: lastpage setting LastPage
 [9] (DML_study.aux)
 
@@ -659,13 +670,13 @@ Package rerunfilecheck Info: File `DML_study.out' has not changed.
 (rerunfilecheck)             Checksum: BBF3AD906A5F46DAD840026F0D4F97A7;2371.
  ) 
 Here is how much of TeX's memory you used:
- 13020 strings out of 475380
- 211018 string characters out of 2778660
- 577372 words of memory out of 3000000
- 34146 multiletter control sequences out of 15000+600000
- 479973 words of font info for 69 fonts, out of 8000000 for 9000
+ 13022 strings out of 475380
+ 211079 string characters out of 2778660
+ 575373 words of memory out of 3000000
+ 34147 multiletter control sequences out of 15000+600000
+ 480140 words of font info for 70 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 72i,14n,79p,400b,511s stack positions out of 10000i,1000n,20000p,200000b,80000s
+ 72i,14n,79p,447b,554s stack positions out of 10000i,1000n,20000p,200000b,80000s
 <C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx
 10.pfb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
 /cmbx12.pfb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
@@ -686,11 +697,12 @@ ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss8.pfb><C:/Users
 /G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/U
 sers/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><
 C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti9.p
-fb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbol
-s/msbm10.pfb>
-Output written on DML_study.pdf (9 pages, 360561 bytes).
+fb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmt
+t9.pfb><C:/Users/G/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/sy
+mbols/msbm10.pfb>
+Output written on DML_study.pdf (9 pages, 374797 bytes).
 PDF statistics:
- 408 PDF objects out of 1000 (max. 8388607)
+ 417 PDF objects out of 1000 (max. 8388607)
  53 named destinations out of 1000 (max. 500000)
  165 words of extra memory for PDF output out of 10000 (max. 10000000)
 

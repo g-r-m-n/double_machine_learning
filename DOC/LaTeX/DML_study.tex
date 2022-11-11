@@ -42,7 +42,7 @@
 \rhead{}
 % set input path to plots and table folders:
 \newcommand*{\InputsFolderPath}{C:/DEV/DML/src/data/}
-\newcommand*{\InputsPath}{\InputsFolderPath/20221108}
+\newcommand*{\InputsPath}{\InputsFolderPath/20221110/}
 %
 \title{Double/Debiased Machine Learning comparison study}
 % Document
@@ -51,6 +51,10 @@
 \abstract{TBA}
 \section{Motivation}
 Double/Debiased machine learning model is especially suited for the analysis of causal effects.
+
+The following analysis bases on the Python package "DoubleML" from \cite{Bach2022}. 
+In the following, we will use the implementation and the data generation processes (DGP) for different variations of the Double/Debiased Machine Learning approach and compare their performance.
+All scripts for the analysis in this github repository: \url{https://github.com/g-r-m-n/dml}.
 
 \section{Double/Debiased Machine Learning Model}
 \subsection{Partial linear regression model}
@@ -128,10 +132,13 @@ $\mu_0$ is a function that maps $X$ and $Z$ to $\mathbb{R}$.
 
 \section{Simulation experiments}
 We conduct in total four simulation experiments, i.e., Scenario 1-4. 
-The data generating processes (DGPs) increase in terms of complexity for the scenarios and we compare the results from models which are suitable form the underlying data structure.
+The DGPs increase in terms of complexity for the scenarios and we compare the results from models which are suitable form the underlying data structure.
 In each simulation experiment, we create $n=1.000$ observations of data for $k=20$ variables.
 We set the treatment effect parameter $\theta$ to 0.5 and replicate the DGP 30 times.
-The DGPs of the simulation experiments (A)-(D) are from \cite{Bach2022} and \cite{Bach2021}.
+The DGPs of the simulation experiments (A)-(D) are from \cite{Bach2022} and \cite{Bach2021}.\\
+
+Note that we find overall similar performance differences in the comparison of the different approaches in terms of that the double ML models (i.e., PLR, IRM, PLR-IV and IIV) are typically in a similar ballpark as their linear counter parts (i.e., OLS or 2SLS), in case we increase, e.g., the number of observations $n$ or the number of parameters $k$, modify the DGPs and/or hyper-parameter tuning settings.\\
+
 
 To estimate the non-linear functions in the PLR, IRM, PLR-IV and IIV models, we use random forest models, either classification models if the dependent variable is binary and regression model otherwise.
 As hyper-parameters, we sue  100 trees, a maximum of 20 features, a maximum depth of 5 and a minimum sample of 2 per leave.
@@ -189,13 +196,11 @@ The red line represents the true value of the treatment effect.
 		\label{Scenario 1}
 	\end{center}
 \end{figure}
-We find that the DML-PLR and the OLS model tend to recover the treatment effect overall similarly in terms of how accurate the point estimates are and of how wider the confidence intervals are.
-The NAIVE-ML model has the tendency to overfitted the treatment effect.
-
 Table \ref{Scenario1} shows the root mean squared error (RMSE), the mean absolute error (MAE) and the bias of estimated treatment effect and the true value across the replications for the compared models.
 The last row indicates which model performs best according to RMSE, MAE or bias.
 \input{\InputsPath/tables/Scenario1}
-
+We find in Scenario 1 that the DML-PLR and the OLS model tend to recover the treatment effect overall similarly in terms of how accurate the point estimates are, of how wider the confidence intervals are and in terms of the (absolute) bias.
+The NAIVE-ML model performs worse in the RMSE, and MAE and has a larger bias compared to DML-PLR and OLS by a factor of three to four.
 
 \subsection{Scenario 2}
 \subsubsection{DGP: IRM model}
@@ -226,6 +231,9 @@ We set the parameters $R^2_d$ and $R^2_y$ to 0.5.
 	\end{center}
 \end{figure}
 \input{\InputsPath/tables/Scenario2}
+We find in Scenario 2 that the DML-PLR and the OLS model tend to recover the treatment effect overall similarly in terms of how wider the confidence intervals, the RMSE, and MAE. 
+DML-IRM and OLS obtain an similar low bias, the one of DML-PLR is slightly higher.
+The NAIVE-ML model performs worse across RMSE, MAE and bias.
 
 
 \subsection{Scenario 3}
@@ -258,7 +266,10 @@ Note that the endogeneity of $D$ comes from the non-zero correlation of $\vareps
 	\end{center}
 \end{figure}
 \input{\InputsPath/tables/Scenario3}
+We find in Scenario 3 that the 2SLS and the DML-PLIV model tend to recover the treatment effect overall similarly in terms of how wider the confidence intervals, the RMSE, MAE and bias.  
+The 2SLS model is however notable better in all three performance metrics RMSE, MAE and bias than 2SLS.
 
+The OLS, NAIVE-ML and DML-PLR models perform worse across RMSE, MAE and bias, whereas OLS is better than the other two.
 
 \subsection{Scenario 4}
 \subsubsection{IIV model}
@@ -288,6 +299,10 @@ Note that the endogeneity of $D$ comes from the non-zero correlation of $u_i$ an
 	\end{center}
 \end{figure}
 \input{\InputsPath/tables/Scenario4}
+We find in Scenario 4 that the DML-IIV, the 2SLS and the DML-PLIV model tend to recover the treatment effect overall similarly in terms of how wider the confidence intervals, the RMSE, MAE and bias.  
+The DML-IIV model is however notable better in all three performance metrics RMSE, MAE and bias than the 2SLS and DML-PLIV models.
+
+The OLS, NAIVE-ML, DML-PLR and DML-IRM models perform worse across RMSE, MAE and bias, whereas OLS is better than the other three.
 
 \section{Conclusion}
 
