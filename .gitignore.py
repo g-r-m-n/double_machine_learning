@@ -6,6 +6,9 @@ __pycache__/
 /DOC/*
 /src/data/*
 
+.ipynb_checkpoints
+
+/.ipynb_checkpoints/*
 # C extensions
 *.so
 
