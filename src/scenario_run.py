@@ -3,14 +3,14 @@
 
 # set run paramters
 SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
-SCENARIOS   = [1] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   = [1,2,3,4] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
-n_rep = 30   #default: 1000 number of repetitions.
+n_rep = 100   #default: 100 number of repetitions.
 PRINT = 0    # print (intermediate) results.
 theta = 0.5  # true ATE parameter.
-n_obs = 1000 # number of observations.
+n_obs = 10000 # number of observations.
 dim_x = 20 # Number of explanatory (confunding) varOiables.
 n_fold= 2    # Number of folds for ML model cross-fitting.
 TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
