@@ -12,11 +12,44 @@ from scipy.linalg import toeplitz
 _array_alias = ['array', 'np.ndarray', 'np.array', np.ndarray]
 _data_frame_alias = ['DataFrame', 'pd.DataFrame', pd.DataFrame]
 _dml_data_alias = ['DoubleMLData', dml.DoubleMLData]
+from xgboost import XGBClassifier,XGBRegressor
+from sklearn.linear_model import Lasso, SGDClassifier 
+from sklearn.neural_network import MLPClassifier, MLPRegressor 
+
+def get_grids(grid_list):
+    param_grids = dict()
+    param_grids['ml_g'] = grid_list
+    param_grids['ml_m'] = grid_list
+    param_grids['ml_l'] = grid_list
+    param_grids['ml_r'] = grid_list
+    return param_grids
+
+def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV_DGP=0):
+    
+    if MODELS['OLS_'] and ('OLS' not in model_index):
+        model_index.append('OLS')
+    if MODELS['OLS_PO_'] and ('OLS-partialed-out' not in model_index):
+        model_index.append('OLS-partialed-out')   
+    if MODELS['TWO_SLS_'] and IV_DGP and ('2SLS' not in model_index):
+        model_index.append('2SLS')   
+    if MODELS['NAIVE_ML_']:
+        model_index.append('NAIVE-ML '+alog_type) 
+    if MODELS['DML_PLR_']:
+        model_index.append('DML-PLR '+alog_type)      
+    if MODELS['DML_IRM_'] and NON_LINEAR_DGP:
+        model_index.append('DML-IRM '+alog_type)   
+    if MODELS['DML_PLIV_'] and IV_DGP :
+        model_index.append('DML-PLIV '+alog_type)         
+    if MODELS['DML_IIV_'] and IV_DGP and NON_LINEAR_DGP:
+        model_index.append('DML-IIV '+alog_type)
+    return(model_index)    
+        
 
 class model_object:
     
-    def __init__(self,model_type, n_fold = 2):
+    def __init__(self, model_type, algo_type='RF', n_fold = 2):
         self.type = model_type
+        self.algo_type = algo_type
         # is dml model type?
         self.type_dml  =  self.type in ['dml-plr','dml-pliv','dml-irm','dml-iiv','naive-ml']
         # is linear regression model type?
@@ -28,9 +61,22 @@ class model_object:
         data = data.copy()
         if self.type_dml:
             # specify the ML models:
-            learner_reg = RandomForestRegressor(n_estimators=100, max_features=20, max_depth=5, min_samples_leaf=2)
-            
-            learner_class = RandomForestClassifier(n_estimators=100, max_features=20, max_depth=5, min_samples_leaf=2)
+            if self.algo_type == 'RF':
+                learner_reg = RandomForestRegressor(n_estimators=100, max_features=20, max_depth=5, min_samples_leaf=2)
+                
+                learner_class = RandomForestClassifier(n_estimators=100, max_features=20, max_depth=5, min_samples_leaf=2)
+                
+            elif self.algo_type == 'XGBoost':   
+                learner_reg   = XGBRegressor(n_estimators=100, max_depth=5,  learning_rate =0.1)   
+                learner_class = XGBClassifier(n_estimators=100, max_depth=5,  learning_rate =0.1) 
+
+            elif self.algo_type == 'Lasso':   
+                learner_reg   = Lasso(alpha=0.5)   
+                learner_class = SGDClassifier(loss ='modified_huber', alpha=0.0001) # stochastic gradient descent (SGD) 
+                
+            elif self.algo_type == 'NN':   
+                learner_reg   = MLPRegressor(hidden_layer_sizes=(20,),max_iter=10000)
+                learner_class = MLPClassifier(hidden_layer_sizes=(20,),max_iter=10000)    
                 
             iv_vars =[i for i in data.columns if i.lower().startswith('z')]    
             
@@ -160,9 +206,9 @@ class model_object:
             self.fitted_model.coef = self.fitted_model.params
             
     def collect_results(self,results_rep,i_rep): 
-        results_rep.loc[i_rep,'coef_'+self.type] = self.fitted_model.coef[0] 
-        results_rep.loc[i_rep,'lower_bound_'+self.type] = self.fitted_model.interval.iloc[0,0] 
-        results_rep.loc[i_rep,'upper_bound_'+self.type] = self.fitted_model.interval.iloc[0,1] 
+        results_rep.loc[i_rep,'coef_'+self.type+' '+self.algo_type] = self.fitted_model.coef[0] 
+        results_rep.loc[i_rep,'lower_bound_'+self.type+' '+self.algo_type] = self.fitted_model.interval.iloc[0,0] 
+        results_rep.loc[i_rep,'upper_bound_'+self.type+' '+self.algo_type] = self.fitted_model.interval.iloc[0,1] 
         return  results_rep
     
 
@@ -177,27 +223,43 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
     if max_int_x is None:
         max_int_x = nn
     if len(model_index)<2:
-        return        
-    fig, axes = plt.subplots(nrows=len(model_index), sharex=True) 
-    for ix_m, m in enumerate(model_index):
-        model_name= m.lower()
-        y = results_rep['coef_'+model_name]
-        asymmetric_error = [abs(results_rep['lower_bound_'+model_name].values-y), abs(y-results_rep['upper_bound_'+model_name].values)]
+        return      
+    ncols = 1
+    nrows = len(model_index)
+    if nrows > 8:
+        nrows = 8
+        ncols = int(np.ceil(len(model_index)/nrows))
+        if nrows < 16:
+            ncols = 2 
+            nrows = int(np.ceil(len(model_index)/ncols))
         
-        
-        axes[ix_m].errorbar(x, y, yerr=asymmetric_error, fmt='o')
-        axes[ix_m].set_title(m.upper(), fontsize=16)
-        axes[ix_m].hlines(theta, 1, max_int_x-1, color='red')
-        if YLIM is not None:
-            axes[ix_m].set_ylim([0.0, 1])
-      
-        #text size:
-        labels = axes[ix_m].get_xticklabels() + axes[ix_m].get_yticklabels()
-        for label in labels:
-            #label.set_fontweight('bold')
-            label.set_size('16')
-
+    fig, axes = plt.subplots(nrows=nrows, ncols= ncols, sharex=True, squeeze=False) 
+    m_i = 0
+    for j in range(ncols):
+        for i in range(nrows):    
+            if m_i > len(model_index):
+                break
+            else:
+                m = model_index[m_i]; m_i += 1
+            model_type = m.split(' ')[0].lower()
+            algo_type =  m.split(' ')[1] if len(m.split(' '))>1 else ''
+            y = results_rep['coef_'+model_type+' '+algo_type]
+            asymmetric_error = [abs(results_rep['lower_bound_'+model_type+' '+algo_type].values-y), abs(y-results_rep['upper_bound_'+model_type+' '+algo_type].values)]
+            
+            
+            axes[i,j].errorbar(x, y, yerr=asymmetric_error, fmt='o')
+            axes[i,j].set_title(m.upper(), fontsize=16)
+            axes[i,j].hlines(theta, 1, max_int_x-1, color='red')
+            if YLIM is not None:
+                axes[i,j].set_ylim([0.0, 1])
+          
+            #text size:
+            labels = axes[i,j].get_xticklabels() + axes[i,j].get_yticklabels()
+            for label in labels:
+                #label.set_fontweight('bold')
+                label.set_size('16')
     
+        
     # Saving plot to pdf file
     if SAVE_OUTPUT:
         plt.savefig(output_folder_plots  +title1+'.pdf', dpi=plt.dpi,bbox_inches="tight")
@@ -265,7 +327,9 @@ def get_res_stats(results_rep, model_index, theta, PRINT =1):
         return []
     res_stats = pd.DataFrame()
     for m in model_index:
-        res_stats = pd.concat( [res_stats, pd.DataFrame([error_stats(theta, results_rep['coef_'+m.lower()])],index=[m])], axis=0 )
+        model_type = m.split(' ')[0].lower()
+        algo_type =  m.split(' ')[1] if len(m.split(' '))>1 else ''
+        res_stats = pd.concat( [res_stats, pd.DataFrame([error_stats(theta, results_rep['coef_'+model_type+' '+algo_type])],index=[m])], axis=0 )
         
     # add best performing model:
     res_stats2 = res_stats.copy()
@@ -278,203 +342,11 @@ def get_res_stats(results_rep, model_index, theta, PRINT =1):
 
 
 def non_orth_score_w_g(y, d, l_hat, m_hat, g_hat, smpls, *kwargs):
-    """Non-orthotogonal score for partial linear model, i.e., the naive partial linear model."""
+    """ author: DoubleML python package.
+    Non-orthotogonal score for partial linear model, i.e., the naive partial linear model. """
     u_hat = y - g_hat
     psi_a = -np.multiply(d, d)
     psi_b = np.multiply(d, u_hat)
     return psi_a, psi_b
 
 
-def make_irm_data_ext(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, s=1, return_type='DoubleMLData'):
-    """
-    Generates data from a interactive regression (IRM) model.
-    The data generating process is defined as
-
-    .. math::
-
-        d_i &= 1\\left\\lbrace \\frac{\\exp(c_d x_i' \\beta)}{1+\\exp(c_d x_i' \\beta)} > v_i \\right\\rbrace, & &v_i
-        \\sim \\mathcal{U}(0,1),
-
-        y_i &= \\theta d_i + c_y x_i' \\beta d_i + \\zeta_i, & &\\zeta_i \\sim \\mathcal{N}(0,1),
-
-    with covariates :math:`x_i \\sim \\mathcal{N}(0, \\Sigma)`, where  :math:`\\Sigma` is a matrix with entries
-    :math:`\\Sigma_{kj} = 0.5^{|j-k|}`.
-    :math:`\\beta` is a `dim_x`-vector with entries :math:`\\beta_j=\\frac{1}{j^2}` and the constants :math:`c_y` and
-    :math:`c_d` are given by
-
-    .. math::
-
-        c_y = \\sqrt{\\frac{R_y^2}{(1-R_y^2) \\beta' \\Sigma \\beta}}, \\qquad c_d =
-        \\sqrt{\\frac{(\\pi^2 /3) R_d^2}{(1-R_d^2) \\beta' \\Sigma \\beta}}.
-
-    The data generating process is inspired by a process used in the simulation experiment (see Appendix P) of Belloni
-    et al. (2017).
-
-    Parameters
-    ----------
-    n_obs :
-        The number of observations to simulate.
-    dim_x :
-        The number of covariates.
-    theta :
-        The value of the causal parameter.
-    R2_d :
-        The value of the parameter :math:`R_d^2`.
-    R2_y :
-        The value of the parameter :math:`R_y^2`.
-    return_type :
-        If ``'DoubleMLData'`` or ``DoubleMLData``, returns a ``DoubleMLData`` object.
-
-        If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
-
-        If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d)``.
-
-    References
-    ----------
-    Belloni, A., Chernozhukov, V., Fernández‐Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With
-    High‐Dimensional Data. Econometrica, 85: 233-298.
-    """
-    # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723, see suplement
-    v = np.random.uniform(size=[n_obs, ])
-    zeta = np.random.standard_normal(size=[n_obs, ])
-
-    cov_mat = toeplitz([np.power(0.5, k) for k in range(dim_x)])
-    x = np.random.multivariate_normal(np.zeros(dim_x), cov_mat, size=[n_obs, ])
-        
-    beta = [1 / (k**2) for k in range(1, dim_x + 1)]
-    b_sigma_b = np.dot(np.dot(cov_mat, beta), beta)
-    c_y = np.sqrt(R2_y/((1-R2_y) * b_sigma_b))
-    c_d = np.sqrt(np.pi**2 / 3. * R2_d/((1-R2_d) * b_sigma_b))
-
-    xx = np.exp(np.dot(x, np.multiply(beta, c_d)))
-    d = 1. * ((xx/(1+xx)) > v)
-        
-    y = d * theta + d * np.dot(x, np.multiply(beta, c_y)) + s * zeta
-
-    if return_type in _array_alias:
-        return x, y, d
-    elif return_type in _data_frame_alias + _dml_data_alias:
-        x_cols = [f'X{i + 1}' for i in np.arange(dim_x)]
-        data = pd.DataFrame(np.column_stack((x, y, d)),
-                            columns=x_cols + ['y', 'd'])
-        if return_type in _data_frame_alias:
-            return data
-        else:
-            return dml.DoubleMLData(data, 'y', 'd', x_cols)
-    else:
-        raise ValueError('Invalid return_type.')
-
-
-
-def make_irm_data_ext2(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, s=1, return_type='DoubleMLData'):
-
-    v = np.random.uniform(size=[n_obs, ])
-    zeta = np.random.standard_normal(size=[n_obs, ])
-
-    cov_mat = toeplitz([np.power(0.5, k) for k in range(dim_x)])
-    x = np.random.multivariate_normal(np.zeros(dim_x), cov_mat, size=[n_obs, ])
-        
-    #beta = [1 / (k**2) for k in range(1, dim_x + 1)]
-    beta = np.linspace(1, .1, dim_x)
-    b_sigma_b = np.dot(np.dot(cov_mat, beta), beta)
-    c_y = np.sqrt(R2_y/((1-R2_y) * b_sigma_b))
-    c_d = np.sqrt(np.pi**2 / 3. * R2_d/((1-R2_d) * b_sigma_b))
-
-    xx = np.exp(np.dot(x, np.multiply(beta, c_d)))
-    d = 1. * ((xx/(1+xx)) > v)
-        
-    y = d * theta + d * np.dot(x, np.multiply(beta, c_y))+ s * zeta
-
-    if return_type in _array_alias:
-        return x, y, d
-    elif return_type in _data_frame_alias + _dml_data_alias:
-        x_cols = [f'X{i + 1}' for i in np.arange(dim_x)]
-        data = pd.DataFrame(np.column_stack((x, y, d)),
-                            columns=x_cols + ['y', 'd'])
-        if return_type in _data_frame_alias:
-            return data
-        else:
-            return dml.DoubleMLData(data, 'y', 'd', x_cols)
-    else:
-        raise ValueError('Invalid return_type.')
-
-
-
-def make_plr_CCDDHNR2018_nl(n_obs=500, dim_x=20, alpha=0.5, return_type='DoubleMLData', **kwargs):
-    """
-    Generates data from a partially linear regression model used in Chernozhukov et al. (2018) for Figure 1.
-    The data generating process is defined as
-
-    .. math::
-
-        d_i &= m_0(x_i) + s_1 v_i, & &v_i \\sim \\mathcal{N}(0,1),
-
-        y_i &= \\alpha d_i + g_0(x_i) + s_2 \\zeta_i, & &\\zeta_i \\sim \\mathcal{N}(0,1),
-
-
-    with covariates :math:`x_i \\sim \\mathcal{N}(0, \\Sigma)`, where  :math:`\\Sigma` is a matrix with entries
-    :math:`\\Sigma_{kj} = 0.7^{|j-k|}`.
-    The nuisance functions are given by
-
-    .. math::
-
-        m_0(x_i) &= a_0 x_{i,1} + a_1 \\frac{\\exp(x_{i,3})}{1+\\exp(x_{i,3})},
-
-        g_0(x_i) &= b_0 \\frac{\\exp(x_{i,1})}{1+\\exp(x_{i,1})} + b_1 x_{i,3}.
-
-    Parameters
-    ----------
-    n_obs :
-        The number of observations to simulate.
-    dim_x :
-        The number of covariates.
-    alpha :
-        The value of the causal parameter.
-    return_type :
-        If ``'DoubleMLData'`` or ``DoubleMLData``, returns a ``DoubleMLData`` object.
-
-        If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
-
-        If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d)``.
-    **kwargs
-        Additional keyword arguments to set non-default values for the parameters
-        :math:`a_0=1`, :math:`a_1=0.25`, :math:`s_1=1`, :math:`b_0=1`, :math:`b_1=0.25` or :math:`s_2=1`.
-
-    References
-    ----------
-    Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018),
-    Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68.
-    doi:`10.1111/ectj.12097 <https://doi.org/10.1111/ectj.12097>`_.
-    """
-    a_0 = kwargs.get('a_0', 1.)
-    a_1 = kwargs.get('a_1', 0.25)
-    s_1 = kwargs.get('s_1', 1.)
-
-    b_0 = kwargs.get('b_0', 1.)
-    b_1 = kwargs.get('b_1', 0.25)
-    s_2 = kwargs.get('s_2', 1.)
-
-    cov_mat = toeplitz([np.power(0.7, k) for k in range(dim_x)])
-    x = np.random.multivariate_normal(np.zeros(dim_x), cov_mat, size=[n_obs, ])
-    v = np.random.uniform(size=[n_obs, ])
-    
-    dd = a_0 * x[:, 0] + a_1 * np.divide(np.exp(x[:, 2]), 1 + np.exp(x[:, 2])) \
-        + s_1 * np.random.standard_normal(size=[n_obs, ])
- 
-    d = 1. * (np.exp(dd)/(1+np.exp(dd)) > v)
-    
-    y = alpha * d + ( b_0 * np.divide(np.exp(x[:, 0]), 1 + np.exp(x[:, 0])) \
-        + b_1 * x[:, 2] + s_2 * np.random.standard_normal(size=[n_obs, ]))
-
-    if return_type in _array_alias:
-        return x, y, d
-    elif return_type in _data_frame_alias + _dml_data_alias:
-        x_cols = [f'X{i + 1}' for i in np.arange(dim_x)]
-        data = pd.DataFrame(np.column_stack((x, y, d)),
-                            columns=x_cols + ['y', 'd'])
-        if return_type in _data_frame_alias:
-            return data
-        else:
-            return dml.DoubleMLData(data, 'y', 'd', x_cols)
-    else:
-        raise ValueError('Invalid return_type.')

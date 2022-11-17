@@ -3,33 +3,36 @@
 
 # set run paramters
 SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
-SCENARIOS   = [1,2,3,4] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   = [ 1 ] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
-n_rep = 100   #default: 100 number of repetitions.
-PRINT = 0    # print (intermediate) results.
-theta = 0.5  # true ATE parameter.
-n_obs = 10000 # number of observations.
-dim_x = 20 # Number of explanatory (confunding) varOiables.
-n_fold= 2    # Number of folds for ML model cross-fitting.
+n_rep = 100    # default: 100. number of repetitions.
+PRINT = 0      # default: 0.print (intermediate) results.
+theta = 0.5    # default: 0.5. The true ATE parameter.
+n_obs = 10000  # default: 10000 number of observations.
+dim_x = 20     # default: 20. Number of explanatory (confunding) varOiables.
+n_fold= 5      # default: 5. Number of folds for ML model cross-fitting.
 TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
-FORCE_TUING_1 = 1 # default: 0. Force tuning at the first repetition.
+FORCE_TUING_1 = 1 # default: 1. Force tuning at the first repetition.
 # models to consider using the first replication.
-OLS_     = 1 # estimate the OLS model.
-OLS_PO_  = 0 # estimate the OLS partialed-out model.
-TWO_SLS_ = 1 # estimate the 2SLS model.
-NAIVE_ML_= 1 # estimate the naive ML model.
-DML_PLR_ = 1 # estimate the DML-PLR model.
-DML_IRM_ = 1 # estimate the DML-IRM model.
-DML_PLIV_= 1 # estimate the DML-PLIV model.
-DML_IIV_ = 1 # estimate the DML-IIV model.
-
+MODELS ={
+'OLS_'     : 1, # estimate the OLS model.
+'OLS_PO_'  : 0, # estimate the OLS partialed-out model.
+'TWO_SLS_' : 1, # estimate the 2SLS model.
+'NAIVE_ML_': 1, # estimate the naive ML model.
+'DML_PLR_' : 1, # estimate the DML-PLR model.
+'DML_IRM_' : 1, # estimate the DML-IRM model.
+'DML_PLIV_': 1, # estimate the DML-PLIV model.
+'DML_IIV_' : 1, # estimate the DML-IIV model.
+}
+#
+alog_type_list = ['Lasso', 'XGBoost','NN'] # default: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
 
 # load libraries
 import numpy as np
 import pandas as pd
-from doubleml.datasets import make_iivm_data, make_pliv_CHS2015, make_plr_CCDDHNR2018
+from doubleml.datasets import make_iivm_data, make_pliv_CHS2015, make_plr_CCDDHNR2018, make_irm_data
 import sys, os, json
 from datetime import date
 
@@ -59,12 +62,15 @@ np.random.seed(4444)
 
 # specify the parameter grids for tuning:
 if TUNE_MODEL:
-    grid_list = [{'n_estimators': [100], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
-    param_grids = dict()
-    param_grids['ml_g'] = grid_list
-    param_grids['ml_m'] = grid_list
-    param_grids['ml_l'] = grid_list
-    param_grids['ml_r'] = grid_list
+    grid_list_rf = [{'n_estimators': [100,400], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
+    grid_list_xgboost = [{'n_estimators': [100,400], 'max_depth': [2,5,7,10], 'learning_rate': [0.01,0.1,0.3]}] 
+    grid_list_lasso = [{'alpha':np.arange(0.05, 1, 0.05)}]
+    grid_list_nn = [{ 'hidden_layer_sizes':[(20,),(20,20), (20,20,20), (40,),(40,40), (40,40,40) ]}]
+    param_grids = dict()   
+    param_grids['Lasso'] = get_grids(grid_list_lasso)    
+    param_grids['RF'] = get_grids(grid_list_rf)
+    param_grids['XGBoost'] = get_grids(grid_list_xgboost)
+    param_grids['NN'] = get_grids(grid_list_nn)
     
 # %% run scenarios:
     
@@ -72,35 +78,19 @@ for SCENARIO in SCENARIOS:
     print('\n-----------------------------------------------------------------------')
     print('\nRunning Scenario %s'%SCENARIO)
     if SCENARIO   == 1:
-        IV_DGP = 0; NON_LINEAR_DGP = 0; #n_fold= 2 
+        IV_DGP = 0; NON_LINEAR_DGP = 0
     elif SCENARIO == 2:
-        IV_DGP = 0; NON_LINEAR_DGP = 1; #n_fold= 5  
+        IV_DGP = 0; NON_LINEAR_DGP = 1
     elif SCENARIO == 3:
-        IV_DGP = 1; NON_LINEAR_DGP = 0; #n_fold= 2  
+        IV_DGP = 1; NON_LINEAR_DGP = 0
     elif SCENARIO == 4:
-        IV_DGP = 1; NON_LINEAR_DGP = 1; #n_fold= 5 
+        IV_DGP = 1; NON_LINEAR_DGP = 1
         
     # %% model specification
-    
     model_index=[]
-    if OLS_:
-        model_index.append('OLS')
-    if OLS_PO_:
-        model_index.append('OLS-partialed-out')   
-    if TWO_SLS_ and IV_DGP:
-        model_index.append('2SLS')   
-    if NAIVE_ML_:
-        model_index.append('NAIVE-ML') 
-    if DML_PLR_:
-        model_index.append('DML-PLR')      
-    if DML_IRM_ and NON_LINEAR_DGP:
-        model_index.append('DML-IRM')   
-    if DML_PLIV_ and IV_DGP :
-        model_index.append('DML-PLIV')         
-    if DML_IIV_ and IV_DGP and NON_LINEAR_DGP:
-        model_index.append('DML-IIV')
-            
-            
+    for i in alog_type_list:
+        model_index = get_model_index(MODELS, model_index=model_index, alog_type=i, NON_LINEAR_DGP=NON_LINEAR_DGP, IV_DGP=IV_DGP)
+
     # Initialize the result dataset: 
     results_rep = pd.DataFrame()
     
@@ -117,8 +107,8 @@ for SCENARIO in SCENARIOS:
                                             #a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3) #
             # non-linear DGP    
             elif NON_LINEAR_DGP and (not IV_DGP):
-                data = make_irm_data_ext(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1  )  
-                
+                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5  )  
+                # data = make_irm_data_ext(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1) 
                 #data = make_irm_data_ext2(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1  )
                 #data = make_plr_CCDDHNR2018_nl(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3)     
             # linear IV DGP    
@@ -136,8 +126,10 @@ for SCENARIO in SCENARIOS:
             # interate over the model objects:
             model_object_list = []
             for m in model_index:
+                model_type = m.split(' ')[0].lower()
+                algo_type =  m.split(' ')[1] if len(m.split(' '))>1 else ''
                 # Initialize the model object:
-                model_object_m = model_object(m.lower(), n_fold)
+                model_object_m = model_object(model_type, algo_type, n_fold )
                 # update the data for the model objects:
                 model_object_m.update_data(data)
                 # tune the model dml objects:
@@ -163,7 +155,7 @@ for SCENARIO in SCENARIOS:
                         #tune the parameters
                         #Note that the parameter are tuned globally, i.e., across folds but are stored per fold, whereas each set of paramters is the same per fold.
                         print('\nTune hyper-parameters for %s ...'%m)
-                        model_object_m.tune(param_grids)   
+                        model_object_m.tune(param_grids[model_object_m.algo_type])   
                         print('\nCompleted tuning.')
                         tuned_params = model_object_m.model_obj.params
                         # save 
