@@ -13,16 +13,9 @@ _array_alias = ['array', 'np.ndarray', 'np.array', np.ndarray]
 _data_frame_alias = ['DataFrame', 'pd.DataFrame', pd.DataFrame]
 _dml_data_alias = ['DoubleMLData', dml.DoubleMLData]
 from xgboost import XGBClassifier,XGBRegressor
-from sklearn.linear_model import Lasso, SGDClassifier 
+from sklearn.linear_model import Lasso, LogisticRegression 
 from sklearn.neural_network import MLPClassifier, MLPRegressor 
 
-def get_grids(grid_list):
-    param_grids = dict()
-    param_grids['ml_g'] = grid_list
-    param_grids['ml_m'] = grid_list
-    param_grids['ml_l'] = grid_list
-    param_grids['ml_r'] = grid_list
-    return param_grids
 
 def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV_DGP=0):
     
@@ -43,11 +36,12 @@ def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV
     if MODELS['DML_IIV_'] and IV_DGP and NON_LINEAR_DGP:
         model_index.append('DML-IIV '+alog_type)
     return(model_index)    
-        
+
+
 
 class model_object:
     
-    def __init__(self, model_type, algo_type='RF', n_fold = 2):
+    def __init__(self, model_type, algo_type='RF', n_fold = 2, param_grids_reg=[],param_grids_class=[]):
         self.type = model_type
         self.algo_type = algo_type
         # is dml model type?
@@ -55,6 +49,10 @@ class model_object:
         # is linear regression model type?
         self.type_lreg =  self.type in ['2sls','ols','ols-partialed-out']
         self.n_folds = n_fold
+        self.param_grids = dict()
+        self.param_grids_reg = param_grids_reg
+        self.param_grids_class = param_grids_class
+        
         
     def update_data(self, data) :  
         
@@ -72,7 +70,7 @@ class model_object:
 
             elif self.algo_type == 'Lasso':   
                 learner_reg   = Lasso(alpha=0.5)   
-                learner_class = SGDClassifier(loss ='modified_huber', alpha=0.0001) # stochastic gradient descent (SGD) 
+                learner_class = LogisticRegression(C=0.5)
                 
             elif self.algo_type == 'NN':   
                 learner_reg   = MLPRegressor(hidden_layer_sizes=(20,),max_iter=10000)
@@ -80,18 +78,22 @@ class model_object:
                 
             iv_vars =[i for i in data.columns if i.lower().startswith('z')]    
             
+            
             if self.type == 'dml-plr':
                 
                 obj_dml_data = dml.DoubleMLData(data, 'y', 'd')
                 
                 #ml learner for the nuisance function l0(X)=E[Y|X]:
                 self.ml_l = clone(learner_reg)
+                self.param_grids['ml_l'] = self.param_grids_reg
                 
                 #ml learner for the nuisance function m0(X)=E[D|X]:
                 if len(np.unique(data['d'])) <= 10:  
                     self.ml_m = clone(learner_class)
+                    self.param_grids['ml_m'] = self.param_grids_class
                 else:                    
                     self.ml_m = clone(learner_reg)
+                    self.param_grids['ml_m'] = self.param_grids_reg
                 
                 self.model_obj  = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m, n_folds = self.n_folds)
 
@@ -101,12 +103,15 @@ class model_object:
                 
                 #ml learner for the nuisance function g0(X)=E[Y-Dθ0|X]:
                 self.ml_g = clone(learner_reg)
+                self.param_grids['ml_g'] = self.param_grids_reg
                 
                 #ml learner for the nuisance function m0(X)=E[D|X]:
                 if len(np.unique(data['d'])) <= 10:  
                     self.ml_m = clone(learner_class)
+                    self.param_grids['ml_m'] = self.param_grids_class
                 else:                    
                     self.ml_m = clone(learner_reg)
+                    self.param_grids['ml_m'] = self.param_grids_reg
                 
                 self.model_obj = dml.DoubleMLIRM(obj_dml_data, self.ml_g, self.ml_m, n_folds = self.n_folds)
                 
@@ -116,12 +121,15 @@ class model_object:
                 
                 #ml learner for the nuisance function l0(X)=E[Y|X]:
                 self.ml_l = clone(learner_reg)
+                self.param_grids['ml_l'] = self.param_grids_reg
                 
                 #ml learner for the nuisance function m0(X)=E[Z|X]:
                 self.ml_m = clone(learner_reg)
+                self.param_grids['ml_m'] = self.param_grids_reg
                 
                 #ml learner for the nuisance function r0(X)=E[D|X]:
                 self.ml_r = clone(learner_reg)
+                self.param_grids['ml_r'] = self.param_grids_reg
                 
                 self.model_obj = dml.DoubleMLPLIV(obj_dml_data, self.ml_l, self.ml_m, self.ml_r, n_folds = self.n_folds)
                 
@@ -131,12 +139,15 @@ class model_object:
                 
                 #ml learner for the nuisance function g0(X)=E[Y-Dθ0|X]:
                 self.ml_g = clone(learner_reg)
+                self.param_grids['ml_g'] = self.param_grids_reg
                 
                 #ml learner for the nuisance function m0(X)=E[Z|X]:
                 self.ml_m = clone(learner_class)
+                self.param_grids['ml_m'] = self.param_grids_class
                 
                 #ml learner for the nuisance function r0(X)=E[D|X]:
                 self.ml_r = clone(learner_class)
+                self.param_grids['ml_r'] = self.param_grids_class
                 
                 self.model_obj = dml.DoubleMLIIVM(obj_dml_data, self.ml_g, self.ml_m, self.ml_r, n_folds = self.n_folds)    
                 
@@ -146,15 +157,19 @@ class model_object:
                 
                 #ml learner for the nuisance function l0(X)=E[Y|X]:
                 self.ml_l = clone(learner_reg)
+                self.param_grids['ml_l'] = self.param_grids_reg
                     
                 #ml learner for the nuisance function m0(X)=E[Z|X] or  m0(X)=E[D|X]:
                 if len(np.unique(data['d'])) <= 10:  
                     self.ml_m = clone(learner_class)
+                    self.param_grids['ml_m'] = self.param_grids_class
                 else:                    
                     self.ml_m = clone(learner_reg)
+                    self.param_grids['ml_m'] = self.param_grids_reg
                     
                 #ml learner for the nuisance function g0(X)=E[Y-Dθ0|X]:
-                self.ml_g = clone(learner_reg)            
+                self.ml_g = clone(learner_reg)   
+                self.param_grids['ml_g'] = self.param_grids_reg
                 
                 self.model_obj = dml.DoubleMLPLR(obj_dml_data, self.ml_l, self.ml_m, self.ml_g, n_folds = self.n_folds, score=non_orth_score_w_g)
                 
@@ -192,9 +207,9 @@ class model_object:
             exog += ['const']   
             self.model_obj = IV2SLS(endog=data.loc[:,'y'], exog = data.loc[:,['d']+exog], instrument= data.loc[:,exog+iv_vars])
     
-    def tune(self, param_grids, **kwargs):        
+    def tune(self, **kwargs):        
         if self.type_dml:
-           self.model_obj.tune(param_grids, n_folds_tune = self.n_folds, **kwargs)
+           self.model_obj.tune(self.param_grids, n_folds_tune = self.n_folds, **kwargs)
          
        
     def fit(self):

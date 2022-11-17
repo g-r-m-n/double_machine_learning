@@ -1,9 +1,9 @@
 # %% setup
-# pip install numpy pandas doubleml datetime matplotlib
+# pip install numpy pandas doubleml datetime matplotlib xgboost
 
 # set run paramters
 SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
-SCENARIOS   = [ 1 ] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   = [ 2 ] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
@@ -62,16 +62,29 @@ np.random.seed(4444)
 
 # specify the parameter grids for tuning:
 if TUNE_MODEL:
-    grid_list_rf = [{'n_estimators': [100,400], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
-    grid_list_xgboost = [{'n_estimators': [100,400], 'max_depth': [2,5,7,10], 'learning_rate': [0.01,0.1,0.3]}] 
-    grid_list_lasso = [{'alpha':np.arange(0.05, 1, 0.05)}]
-    grid_list_nn = [{ 'hidden_layer_sizes':[(20,),(20,20), (20,20,20), (40,),(40,40), (40,40,40) ]}]
-    param_grids = dict()   
-    param_grids['Lasso'] = get_grids(grid_list_lasso)    
-    param_grids['RF'] = get_grids(grid_list_rf)
-    param_grids['XGBoost'] = get_grids(grid_list_xgboost)
-    param_grids['NN'] = get_grids(grid_list_nn)
+    # initialize the parameter grid:
+    param_grids = dict() 
+    # RF:
+    # initialize the RF parameter grid    
+    param_grids['RF'] = dict()
+    # specific the RF regression parameter grid
+    param_grids['RF']['reg']  = [{'n_estimators': [100,400], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
+    # specific the RF classification parameter grid
+    param_grids['RF']['class'] = param_grids['RF']['reg'] 
+    # Lasso:
+    param_grids['Lasso'] = dict()
+    param_grids['Lasso']['reg']   = [{'alpha':np.arange(0.05, 1, 0.05)}]
+    param_grids['Lasso']['class'] = [{'C':np.arange(0.05, 1, 0.05)}]
+    # XGBoost:
+    param_grids['XGBoost'] = dict()
+    param_grids['XGBoost']['reg']  = [{'n_estimators': [100,400], 'max_depth': [2,5,7,10], 'learning_rate': [0.01,0.1,0.3]}] 
+    param_grids['XGBoost']['class'] = param_grids['XGBoost']['reg'] 
+    # NN:
+    param_grids['NN'] = dict()
+    param_grids['NN']['reg']  = [{ 'hidden_layer_sizes':[(20,),(20,20), (20,20,20), (40,),(40,40), (40,40,40) ]}]
+    param_grids['NN']['class'] = param_grids['NN']['reg'] 
     
+ 
 # %% run scenarios:
     
 for SCENARIO in SCENARIOS:
@@ -128,8 +141,10 @@ for SCENARIO in SCENARIOS:
             for m in model_index:
                 model_type = m.split(' ')[0].lower()
                 algo_type =  m.split(' ')[1] if len(m.split(' '))>1 else ''
+                param_grids_reg   = param_grids[algo_type]['reg'] if len(m.split(' '))>1 else ''
+                param_grids_class = param_grids[algo_type]['class'] if len(m.split(' '))>1 else ''
                 # Initialize the model object:
-                model_object_m = model_object(model_type, algo_type, n_fold )
+                model_object_m = model_object(model_type, algo_type, n_fold, param_grids_reg, param_grids_class)
                 # update the data for the model objects:
                 model_object_m.update_data(data)
                 # tune the model dml objects:
@@ -155,7 +170,7 @@ for SCENARIO in SCENARIOS:
                         #tune the parameters
                         #Note that the parameter are tuned globally, i.e., across folds but are stored per fold, whereas each set of paramters is the same per fold.
                         print('\nTune hyper-parameters for %s ...'%m)
-                        model_object_m.tune(param_grids[model_object_m.algo_type])   
+                        model_object_m.tune()   
                         print('\nCompleted tuning.')
                         tuned_params = model_object_m.model_obj.params
                         # save 
