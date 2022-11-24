@@ -15,6 +15,7 @@ _dml_data_alias = ['DoubleMLData', dml.DoubleMLData]
 from xgboost import XGBClassifier,XGBRegressor
 from sklearn.linear_model import Lasso, LogisticRegression 
 from sklearn.neural_network import MLPClassifier, MLPRegressor 
+from sklearn.preprocessing import StandardScaler
 
 
 def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV_DGP=0):
@@ -57,6 +58,12 @@ class model_object:
     def update_data(self, data) :  
         
         data = data.copy()
+        if 0:# scale variables
+            input_vars =  [i for i in data.columns if not i.lower().startswith('y')] #data.columns # 
+            scaler = StandardScaler()
+            scaler_model = scaler.fit(data.loc[:,input_vars])
+            data.loc[:,input_vars] = pd.DataFrame(scaler_model.transform(data.loc[:,input_vars]),columns=input_vars)
+            
         if self.type_dml:
             # specify the ML models:
             if self.algo_type == 'RF':
@@ -70,11 +77,11 @@ class model_object:
 
             elif self.algo_type == 'Lasso':   
                 learner_reg   = Lasso(alpha=0.5)   
-                learner_class = LogisticRegression(C=0.5)
+                learner_class = LogisticRegression(C=0.5, penalty='l1', solver ='saga')
                 
             elif self.algo_type == 'NN':   
-                learner_reg   = MLPRegressor(hidden_layer_sizes=(20,),max_iter=10000)
-                learner_class = MLPClassifier(hidden_layer_sizes=(20,),max_iter=10000)    
+                learner_reg   = MLPRegressor(hidden_layer_sizes=(20,),max_iter=10000, activation = 'identity')
+                learner_class = MLPClassifier(hidden_layer_sizes=(20,),max_iter=10000, activation = 'logistic')    
                 
             iv_vars =[i for i in data.columns if i.lower().startswith('z')]    
             
@@ -252,7 +259,7 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
     m_i = 0
     for j in range(ncols):
         for i in range(nrows):    
-            if m_i > len(model_index):
+            if m_i >= len(model_index):
                 break
             else:
                 m = model_index[m_i]; m_i += 1

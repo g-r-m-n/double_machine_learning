@@ -7,14 +7,14 @@ SCENARIOS   = [ 2 ] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
-n_rep = 100    # default: 100. number of repetitions.
+n_rep = 30    # default: 100. number of repetitions.
 PRINT = 0      # default: 0.print (intermediate) results.
 theta = 0.5    # default: 0.5. The true ATE parameter.
-n_obs = 10000  # default: 10000 number of observations.
+n_obs = 1000  # default: 10000 number of observations.
 dim_x = 20     # default: 20. Number of explanatory (confunding) varOiables.
 n_fold= 5      # default: 5. Number of folds for ML model cross-fitting.
 TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
-FORCE_TUING_1 = 1 # default: 1. Force tuning at the first repetition.
+FORCE_TUING_1 = 0 # default: 1. Force tuning at the first repetition.
 # models to consider using the first replication.
 MODELS ={
 'OLS_'     : 1, # estimate the OLS model.
@@ -27,7 +27,7 @@ MODELS ={
 'DML_IIV_' : 1, # estimate the DML-IIV model.
 }
 #
-alog_type_list = ['Lasso', 'XGBoost','NN'] # default: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
+alog_type_list = ['Lasso','NN' ] # default: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
 
 # load libraries
 import numpy as np
@@ -61,7 +61,7 @@ reload(sys.modules['utility'])
 np.random.seed(4444)
 
 # specify the parameter grids for tuning:
-if TUNE_MODEL:
+if 1: #TUNE_MODEL:
     # initialize the parameter grid:
     param_grids = dict() 
     # RF:
@@ -77,7 +77,7 @@ if TUNE_MODEL:
     param_grids['Lasso']['class'] = [{'C':np.arange(0.05, 1, 0.05)}]
     # XGBoost:
     param_grids['XGBoost'] = dict()
-    param_grids['XGBoost']['reg']  = [{'n_estimators': [100,400], 'max_depth': [2,5,7,10], 'learning_rate': [0.01,0.1,0.3]}] 
+    param_grids['XGBoost']['reg']  = [{'n_estimators': [100], 'max_depth': [2,5,7], 'learning_rate': [0.01,0.1,0.3]}] 
     param_grids['XGBoost']['class'] = param_grids['XGBoost']['reg'] 
     # NN:
     param_grids['NN'] = dict()
@@ -176,9 +176,10 @@ for SCENARIO in SCENARIOS:
                         # save 
                         with open(file_name_tuned_parameters, "w") as fp:
                             json.dump(tuned_params , fp) 
-    
+                
                 # fit the model objects:
                 model_object_m.fit()
+                
                 # collect results: 
                 model_object_m.collect_results(results_rep, i_rep)
                 # print the detailed results if wanted:
