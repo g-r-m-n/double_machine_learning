@@ -2,8 +2,8 @@
 
 
 ## Motivation
-The double/debiased machine learning (DML) model is increasing in popularity as it designed to use machine learning for the analysis of causal effects.
-We compare the performance of the four variations of the DML model with a naive machine learning model and simple linear regression models. 
+The double/debiased machine learning (DML) model is increasing in popularity as it is designed to use machine learning for the analysis of causal effects.
+We compare the performance of four variations of the DML model with a naive machine learning model and simple linear regression models. 
 For doing so, we compare the estimation results for four different simulation experiment scenarios implemented in the Python package [DoubleML](https://github.com/DoubleML) from Bach et al. 2022. 
 The simulation experiment scenarios are either with linear or non-linear effects and with or without endogeneity of the causal effect variable.
 
