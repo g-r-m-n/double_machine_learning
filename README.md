@@ -14,7 +14,7 @@ See the DML/requirements.txt file for package requirements to run the analysis.
 
 
 ## Run
-Adjust the settings in the first junk of the script DML/src/scenario_run.py or leave the default settings. Run the script DML/src/scenario_run.py. It conducts per default all experimentation scenario runs, including data generation and tuning if wanted, and produces as result summary tables and plots of the outcomes.
+Adjust the settings in the first junk of the script DML/src/scenario_run.py or leave the default settings. Run the script DML/src/scenario_run.py. It conducts per default all experimentation scenario runs, including data generation and tuning if wanted, and produces as result summary tables (in .csv and .tex formats) and plots (in .png and .pdf formats) of the outcomes.
 
 
 ## References
