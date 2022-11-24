@@ -7,7 +7,7 @@ We compare the performance of four variations of the DML model with a naive mach
 For doing so, we compare the estimation results for four different simulation experiment scenarios implemented in the Python package [DoubleML](https://github.com/DoubleML) from Bach et al. 2022. 
 The simulation experiment scenarios are either with linear or non-linear effects and with or without endogeneity of the causal effect variable.
 
-The considered machine learning algorithmes are Random Forest, Lasso, XGBoost and Neural Nets.
+The considered machine learning algorithmes include Random Forest, Lasso, XGBoost and Neural Nets.
 
 ## Setup
 See the DML/requirements.txt file for package requirements to run the analysis.
