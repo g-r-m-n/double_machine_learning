@@ -27,7 +27,7 @@ MODELS ={
 'DML_IIV_' : 1, # estimate the DML-IIV model.
 }
 #
-alog_type_list = ['Lasso','RF', 'XGBoost'] # default: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
+alog_type_list = ['Lasso','RF', 'XGBoost'] # default: ['Lasso','RF', 'XGBoost']. Available: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
 
 
 # load libraries
@@ -37,9 +37,11 @@ from doubleml.datasets import make_iivm_data, make_pliv_CHS2015, make_plr_CCDDHN
 import sys, os, json
 from datetime import date
 
+# set the path to repository:
+root_dir = 'C:/DEV/'
 #root_dir = '/home/studio-lab-user/'
 #root_dir ='/mnt/batch/tasks/shared/LS_root/mounts/clusters/grmnzntt1/code/Users/grmnzntt/'
-root_dir = 'C:/DEV/'
+
 pth_to_src = root_dir+'DML/src/'
 # data:
 today = date.today().strftime('%Y%m%d')
@@ -69,7 +71,7 @@ if 1: #TUNE_MODEL:
     # initialize the RF parameter grid    
     param_grids['RF'] = dict()
     # specific the RF regression parameter grid
-    param_grids['RF']['reg']  = [{'n_estimators': [100,400], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] # [{'n_estimators': [100], 'max_features': [5,], 'max_depth': [2, 4], 'min_samples_leaf': [ 2]}] #
+    param_grids['RF']['reg']  = [{'n_estimators': [100,400], 'max_features': [ 10,  20], 'max_depth': [5,None], 'min_samples_leaf': [1, 4]}] 
     # specific the RF classification parameter grid
     param_grids['RF']['class'] = param_grids['RF']['reg'] 
     # Lasso:
@@ -118,10 +120,9 @@ for SCENARIO in SCENARIOS:
             # linear DGP    
             if (not NON_LINEAR_DGP) and (not IV_DGP):
                 data = make_plr_CCDDHNR2018(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1, a_1 = 0.25, s_1 = 1, b_0 = 1, b_1 = 0.25, s_2 = 1) 
-                                            #a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3) #
             # non-linear DGP    
             elif NON_LINEAR_DGP and (not IV_DGP):
-                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5  )      
+                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5  )     
             # linear IV DGP    
             elif (not NON_LINEAR_DGP) and IV_DGP:
                 data = make_pliv_CHS2015(alpha=theta, n_obs=n_obs, dim_x=dim_x, dim_z=1, return_type='DataFrame')        
