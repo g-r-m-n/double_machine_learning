@@ -121,10 +121,7 @@ for SCENARIO in SCENARIOS:
                                             #a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3) #
             # non-linear DGP    
             elif NON_LINEAR_DGP and (not IV_DGP):
-                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5  )  
-                # data = make_irm_data_ext(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1) 
-                #data = make_irm_data_ext2(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1  )
-                #data = make_plr_CCDDHNR2018_nl(alpha=theta, n_obs=n_obs, dim_xS=dim_x, return_type='DataFrame', a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3)     
+                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5  )      
             # linear IV DGP    
             elif (not NON_LINEAR_DGP) and IV_DGP:
                 data = make_pliv_CHS2015(alpha=theta, n_obs=n_obs, dim_x=dim_x, dim_z=1, return_type='DataFrame')        
