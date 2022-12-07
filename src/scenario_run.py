@@ -3,7 +3,7 @@
 
 # set run paramters
 SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
-SCENARIOS   = [ 1, 2, 3, 4 ] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   = [1, 2, 3, 4] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
@@ -14,7 +14,7 @@ n_obs = 10000  # default: 10000 number of observations.
 dim_x = 20     # default: 20. Number of explanatory (confunding) varOiables.
 n_fold= 5      # default: 5. Number of folds for ML model cross-fitting.
 TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
-FORCE_TUING_1 = 0 # default: 1. Force tuning at the first repetition.
+FORCE_TUING_1 = 1 # default: 1. Force tuning at the first repetition.
 # models to consider using the first replication.
 MODELS ={
 'OLS_'     : 1, # estimate the OLS model.
@@ -27,7 +27,8 @@ MODELS ={
 'DML_IIV_' : 1, # estimate the DML-IIV model.
 }
 #
-alog_type_list = ['Lasso', 'RF','XGBoost','NN'] # default: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
+alog_type_list = ['Lasso','RF', 'XGBoost'] # default: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
+
 
 # load libraries
 import numpy as np
@@ -73,15 +74,15 @@ if 1: #TUNE_MODEL:
     param_grids['RF']['class'] = param_grids['RF']['reg'] 
     # Lasso:
     param_grids['Lasso'] = dict()
-    param_grids['Lasso']['reg']   = [{'alpha':np.arange(0.05, 1, 0.05)}]
-    param_grids['Lasso']['class'] = [{'C':np.arange(0.05, 1, 0.05)}]
+    param_grids['Lasso']['reg']   = [{'alpha':np.arange(0.01, 1, 0.01)}]
+    param_grids['Lasso']['class'] = [{'C':np.arange(0.01, 1, 0.01)}]
     # XGBoost:
     param_grids['XGBoost'] = dict()
     param_grids['XGBoost']['reg']  = [{'n_estimators': [100], 'max_depth': [2,5,7], 'learning_rate': [0.01,0.1,0.3]}] 
     param_grids['XGBoost']['class'] = param_grids['XGBoost']['reg'] 
     # NN:
     param_grids['NN'] = dict()
-    param_grids['NN']['reg']  = [{ 'hidden_layer_sizes':[(20,),(20,20), (20,20,20), (40,),(40,40), (40,40,40) ]}]
+    param_grids['NN']['reg']  = [{ 'hidden_layer_sizes':[(20,),(10,10),(7,7,7), (40,),(20,20),(14,14,14)]}]
     param_grids['NN']['class'] = param_grids['NN']['reg'] 
     
  
@@ -123,7 +124,7 @@ for SCENARIO in SCENARIOS:
                 data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5  )  
                 # data = make_irm_data_ext(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1) 
                 #data = make_irm_data_ext2(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 , s=1  )
-                #data = make_plr_CCDDHNR2018_nl(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3)     
+                #data = make_plr_CCDDHNR2018_nl(alpha=theta, n_obs=n_obs, dim_xS=dim_x, return_type='DataFrame', a_0 = 1.5, a_1 = 1.25, s_1 = .1, b_0 = 1, b_1 = 0.25, s_2 = 3)     
             # linear IV DGP    
             elif (not NON_LINEAR_DGP) and IV_DGP:
                 data = make_pliv_CHS2015(alpha=theta, n_obs=n_obs, dim_x=dim_x, dim_z=1, return_type='DataFrame')        
@@ -135,7 +136,11 @@ for SCENARIO in SCENARIOS:
             # print data descriptions:
             if PRINT:
                 print(data.describe())
-               
+            
+            # Add constant    
+            if 0:
+                data['X0'] = 1
+                
             # interate over the model objects:
             model_object_list = []
             for m in model_index:
@@ -178,8 +183,21 @@ for SCENARIO in SCENARIOS:
                             json.dump(tuned_params , fp) 
                 
                 # fit the model objects:
-                model_object_m.fit()
-                
+                if 1 or not model_object_m.type_dml or model_type != 'dml-irm':
+                    model_object_m.fit()
+                else:
+                    model_object_m.fit(store_predictions = True)
+                    y_pred = model_object_m.model_obj.predictions
+                    y_pred = pd.DataFrame({i:y_pred[i].flatten() for i in y_pred.keys()})
+                    # estimation of d
+                    if model_type == 'dml-irm':
+                        print('\n'+model_type +':'+algo_type)
+                        print(pd.crosstab(data.d,(y_pred.ml_m>=0.5)*1))
+                        
+                        # estimation of y
+                        y_est = y_pred.ml_g1*y_pred.ml_m + y_pred.ml_g0*(1-y_pred.ml_m)
+                        print(error_stats(data.y, y_est))
+                    
                 # collect results: 
                 model_object_m.collect_results(results_rep, i_rep)
                 # print the detailed results if wanted:

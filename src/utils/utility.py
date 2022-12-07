@@ -76,12 +76,12 @@ class model_object:
                 learner_class = XGBClassifier(n_estimators=100, max_depth=5,  learning_rate =0.1) 
 
             elif self.algo_type == 'Lasso':   
-                learner_reg   = Lasso(alpha=0.5)   
-                learner_class = LogisticRegression(C=0.5, penalty='l1', solver ='saga')
+                learner_reg   = Lasso(alpha=0.1)   
+                learner_class = LogisticRegression(C=0.1, penalty='l1', solver ='saga')
                 
             elif self.algo_type == 'NN':   
-                learner_reg   = MLPRegressor(hidden_layer_sizes=(20,),max_iter=10000, activation = 'identity')
-                learner_class = MLPClassifier(hidden_layer_sizes=(20,),max_iter=10000, activation = 'logistic')    
+                learner_reg   = MLPRegressor(hidden_layer_sizes=(10,10),max_iter=10000, activation = 'identity')
+                learner_class = MLPClassifier(hidden_layer_sizes=(10,10),max_iter=10000)    
                 
             iv_vars =[i for i in data.columns if i.lower().startswith('z')]    
             
@@ -184,22 +184,23 @@ class model_object:
                 raise ValueError("model type not found.")
             
         if self.type =='ols':
-            data.loc[:,'const'] = 1
-            exog = [i for i in data.columns if i.lower().startswith('x')] + ['const'] 
+            data.loc[:,'X0'] = 1
+            exog = [i for i in data.columns if i.lower().startswith('x')] + ['X0'] 
+            exog = pd.unique(exog).tolist()
             
             self.model_obj = OLS(endog=data.loc[:,'y'], exog = data.loc[:,['d']+exog])            
          
         if self.type =='ols-partialed-out':
             
-            data.loc[:,'const'] = 1
-            exog = [i for i in data.columns if i.lower().startswith('x')] + ['const'] 
-            
+            data.loc[:,'X0'] = 1
+            exog = [i for i in data.columns if i.lower().startswith('x')] + ['X0'] 
+            exog = pd.unique(exog).tolist()
             res_D_on_X = OLS(endog=data.loc[:,'d'], exog = data.loc[:,exog]).fit().resid 
             data.loc[:,'res_D_on_X'] = res_D_on_X
             
             res_Y_on_X = OLS(endog=data.loc[:,'y'], exog = data.loc[:,exog]).fit().resid 
             
-            self.model_obj = OLS(endog = res_Y_on_X, exog = data.loc[:, ['res_D_on_X','const']] )  
+            self.model_obj = OLS(endog = res_Y_on_X, exog = data.loc[:, ['res_D_on_X','X0']] )  
           
         if self.type =='2sls':
 
@@ -210,8 +211,9 @@ class model_object:
                 iv_vars = [i+'_sq' for i in exog]
                 data[iv_vars] = data[exog]**2
                 
-            data.loc[:,'const'] = 1
-            exog += ['const']   
+            data.loc[:,'X0'] = 1
+            exog += ['X0']  
+            exog = pd.unique(exog).tolist()
             self.model_obj = IV2SLS(endog=data.loc[:,'y'], exog = data.loc[:,['d']+exog], instrument= data.loc[:,exog+iv_vars])
     
     def tune(self, **kwargs):        
@@ -219,8 +221,8 @@ class model_object:
            self.model_obj.tune(self.param_grids, n_folds_tune = self.n_folds, **kwargs)
          
        
-    def fit(self):
-        self.fitted_model = self.model_obj.fit()
+    def fit(self, **kwargs):
+        self.fitted_model = self.model_obj.fit(**kwargs)
         if self.type_dml:
             self.fitted_model.interval = self.model_obj.confint()
         if self.type_lreg :
@@ -336,7 +338,10 @@ def save_to_tex(df, output_folder_file_path, column_format='', caption='', label
     
    
 def error_stats(theta, y_pred):
-    y_true = np.repeat(theta, len(y_pred))
+    if not hasattr(theta, '__len__') or len(theta) ==1:
+        y_true = np.repeat(theta, len(y_pred))
+    else:
+        y_true = theta
     mean_absolute_error=metrics.mean_absolute_error(y_true, y_pred) 
     mse=metrics.mean_squared_error(y_true, y_pred) 
     #median_absolute_error=metrics.median_absolute_error(y_true, y_pred)
