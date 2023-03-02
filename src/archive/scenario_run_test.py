@@ -2,49 +2,34 @@
 # pip install numpy pandas doubleml datetime matplotlib xgboost
 
 # set run paramters
-TEST_RUN    = 0 # default: 0 conduct a test run with modified settings
-SAVE_OUTPUT = 1 # default: 1. Save the output of the script.
-SCENARIOS   = [1, 2, 3, 4] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SAVE_OUTPUT = 0 # default: 1. Save the output of the script.
+SCENARIOS   = [1] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   = 1 # default: 1. Run the estimation process or otherwise re-load results.
-n_rep = 100    # default: 100. number of repetitions.
+n_rep = 10    # default: 100. number of repetitions.
 PRINT = 0      # default: 0.print (intermediate) results.
 theta = 0.5    # default: 0.5. The true ATE parameter.
-n_obs = 10000  # default: 10000 number of observations.
+n_obs = 1000  # default: 10000 number of observations.
 dim_x = 20     # default: 20. Number of explanatory (confunding) varOiables.
 n_fold= 5      # default: 5. Number of folds for ML model cross-fitting.
-score = 'partialling out' # default: 'partialling out'. The score function in the dml model PLR and PLIV models. Either 'partialling out' or 'IV-type'.
-add_additional_nonlinearity = 0 # default: 0 . Add additional non-linearity in the data generating process of y.
-TUNE_MODEL = 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
-FORCE_TUING_1 = 1 # default: 1. Force tuning at the first repetition.
+TUNE_MODEL = 0 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
+FORCE_TUING_1 = 0 # default: 1. Force tuning at the first repetition.
 # models to consider using the first replication.
 MODELS ={
 'OLS_'     : 1, # estimate the OLS model.
 'OLS_PO_'  : 0, # estimate the OLS partialed-out model.
 'TWO_SLS_' : 1, # estimate the 2SLS model.
 'NAIVE_ML_': 1, # estimate the naive ML model.
-'DML_PLR_' : 1, # estimate the DML-PLR model.
+'DML_PLR_' : 0, # estimate the DML-PLR model.
 'DML_IRM_' : 1, # estimate the DML-IRM model.
 'DML_PLIV_': 1, # estimate the DML-PLIV model.
 'DML_IIV_' : 1, # estimate the DML-IIV model.
 }
 #
-alog_type_list = ['Lasso','RF', 'XGBoost'] # default: ['Lasso','RF', 'XGBoost']. Available: ['Lasso', 'RF','XGBoost','NN', Dols]. list of considered ml algorithms.
+alog_type_list = ['RF'] # default: ['Lasso','RF', 'XGBoost']. Available: ['Lasso', 'RF','XGBoost','NN']. list of considered ml algorithms.
 
-# specify test run settings:
-if TEST_RUN:
-    print('\nTEST RUN\n')
-    SAVE_OUTPUT    = 0
-    SCENARIOS      = [1]
-    n_rep          = 10
-    n_obs          = 1000
-    add_additional_nonlinearity = 1
-    #score = 'IV-type' 
-    FORCE_TUING_1  = 0
-    alog_type_list = ['RF']
-    
-    
+
 # load libraries
 import numpy as np
 import pandas as pd
@@ -101,10 +86,7 @@ if 1: #TUNE_MODEL:
     param_grids['NN'] = dict()
     param_grids['NN']['reg']  = [{ 'hidden_layer_sizes':[(20,),(10,10),(7,7,7), (40,),(20,20),(14,14,14)]}]
     param_grids['NN']['class'] = param_grids['NN']['reg'] 
-    # Dols:
-    param_grids['Dols'] = dict()
-    param_grids['Dols']['reg']   = [{'fit_intercept':[True]}]
-    param_grids['Dols']['class'] = [{'C':[0.0001]}]
+    
  
 # %% run scenarios:
     
@@ -134,24 +116,22 @@ for SCENARIO in SCENARIOS:
     # %% Iterate through repetitions:
     if ESTIMATE:        
         for i_rep in range(n_rep): 
-            print('\n-----------------------------------------------')
             print('\nRepetition '+str(i_rep+1)+' from '+str(n_rep))
-            print('\n-----------------------------------------------')
-            results_rep.loc[i_rep,'rep'] = i_rep+1
+            results_rep.loc[i_rep,'rep']      = i_rep+1
             results_rep_pred.loc[i_rep,'rep'] = i_rep+1
             # Generate data
             # linear DGP    
             if (not NON_LINEAR_DGP) and (not IV_DGP):
-                data = make_plr_CCDDHNR2018_II(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', add_additional_nonlinearity = add_additional_nonlinearity, a_0 = 1, a_1 = 0.25, s_1 = 1, b_0 = 1, b_1 = 0.25, s_2 = 1) 
+                data = make_plr_CCDDHNR2018_II(alpha=theta, n_obs=n_obs, dim_x=dim_x, return_type='DataFrame', a_0 = 1, a_1 = 0.25,  s_1 = 0.65, b_0 = 1, b_1 = 0.25, s_2 = 2) 
             # non-linear DGP    
             elif NON_LINEAR_DGP and (not IV_DGP):
-                data = make_irm_data_II(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5, add_additional_nonlinearity = add_additional_nonlinearity )     
+                data = make_irm_data(theta=theta, n_obs=n_obs, dim_x=dim_x,  return_type='DataFrame'  , R2_d=0.5, R2_y=0.5 )     
             # linear IV DGP    
             elif (not NON_LINEAR_DGP) and IV_DGP:
-                data = make_pliv_CHS2015_II(alpha=theta, n_obs=n_obs, dim_x=dim_x, dim_z=1, return_type='DataFrame', add_additional_nonlinearity = add_additional_nonlinearity )        
+                data = make_pliv_CHS2015(alpha=theta, n_obs=n_obs, dim_x=dim_x, dim_z=1, return_type='DataFrame')        
             # non-linear IV DGP
             elif NON_LINEAR_DGP and IV_DGP:
-                data = make_iivm_data_II(theta=theta, n_obs=n_obs, dim_x=dim_x, alpha_x=1.0, return_type='DataFrame', add_additional_nonlinearity = add_additional_nonlinearity )
+                data = make_iivm_data(theta=theta, n_obs=n_obs, dim_x=dim_x, alpha_x=1.0, return_type='DataFrame')
             
             
             # print data descriptions:
@@ -170,7 +150,7 @@ for SCENARIO in SCENARIOS:
                 param_grids_reg   = param_grids[algo_type]['reg'] if len(m.split(' '))>1 else ''
                 param_grids_class = param_grids[algo_type]['class'] if len(m.split(' '))>1 else ''
                 # Initialize the model object:
-                model_object_m = model_object(model_type, algo_type, n_fold, param_grids_reg, param_grids_class, score)
+                model_object_m = model_object(model_type, algo_type, n_fold, param_grids_reg, param_grids_class)
                 # update the data for the model objects:
                 model_object_m.update_data(data)
                 # tune the model dml objects:
@@ -182,13 +162,11 @@ for SCENARIO in SCENARIOS:
                         with open(file_name_tuned_parameters) as f:
                             tuned_params = f.read()
                         tuned_params = json.loads(tuned_params)
-                        
                         # adjust the number of folds if needed:
                         for i in tuned_params:
                             for j in tuned_params[i].keys():
                                 # adjust if the tuned_paramters are not of length n-fold:
-                                tuned_params_ij =     tuned_params[i][j][0]
-                                if (tuned_params_ij is not None) and (len(tuned_params_ij) != model_object_m.n_folds): 
+                                if len(tuned_params[i][j][0]) != model_object_m.n_folds:
                                     tuned_params[i][j] =                                 [np.repeat(tuned_params[i][j][0][0],model_object_m.n_folds).tolist()]
                                 
                         # set the tuned_params
@@ -214,19 +192,21 @@ for SCENARIO in SCENARIOS:
                 model_object_m.collect_results(results_rep, i_rep)
                 # prediction of y:
                 model_object_m.collect_results_pred(results_rep_pred, i_rep, data)
-            
                 
-            # print and plot intermediate results for y_pred::
-            if 1:    
-                 res_stats_pred = get_res_stats_agg(results_rep_pred, model_index)     
+                # print the detailed results if wanted:
+                if PRINT:
+                    print(model_object_m.fitted_model.summary())  
+                # save the fitted model object    
+                model_object_list.append(model_object_m)
+                             
                     
-            # print and plot intermediate results for theta:     
-            if 1:    
+            # print and plot intermediate results:     
+            if 1:        
                 res_stats = get_res_stats(results_rep, model_index, theta) 
                 # plot the ate estimations
                 plot_ate_est(results_rep, theta, model_index, max_int_x = n_rep, YLIM= None )
-
-            
+                  
+    
     # save results_rep
     if ESTIMATE and SAVE_OUTPUT:
         results_rep.to_csv(output_folder+'results_rep'+'Scenario'+str(SCENARIO)+'.csv', index= False)
@@ -236,7 +216,7 @@ for SCENARIO in SCENARIOS:
         results_rep = pd.read_csv(output_folder+'results_rep'+'Scenario'+str(SCENARIO)+'.csv')
         
     # %% overall results
-    print(results_rep)
+    print(results_rep[[i for i in results_rep.columns if i.startswith('coef_')]])
     
     # plot the ate estimations
     plot_ate_est(results_rep, theta, model_index,  max_int_x = None, output_folder_plots = output_folder_plots, title1 = 'Scenario'+str(SCENARIO), YLIM= None, SAVE_OUTPUT = SAVE_OUTPUT)
