@@ -1,0 +1,27 @@
+TEST_RUN    : 0 # default: 0 conduct a test run with modified settings
+SAVE_OUTPUT : 0 # default: 1. Save the output of the script.
+SCENARIOS   : [1] # default [1, 2, 3, 4]. The list of Scenarios to run.
+#IV_DGP         = 0 # default: 1. Use a IV data-generating process.
+#NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
+ESTIMATE   : 1 # default: 1. Run the estimation process or otherwise re-load results.
+n_rep : 3    # default: 100. number of repetitions.
+PRINT : 0      # default: 0.print (intermediate) results.
+theta : 0.5    # default: 0.5. The true ATE parameter.
+n_obs : 1000  # default: 10000 number of observations.
+dim_x : 20     # default: 20. Number of explanatory (confunding) varOiables.
+n_fold: 5      # default: 5. Number of folds for ML model cross-fitting.
+score : 'partialling out' # default: 'partialling out'. The score function in the dml model PLR and PLIV models. Either 'partialling out' or 'IV-type'.
+add_additional_nonlinearity : 1 # default: 0 . Add additional non-linearity in the data generating process of y.
+TUNE_MODEL : 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
+FORCE_TUING_1 : 1 # default: 1. Force tuning at the first repetition.
+# models to consider using the first replication.
+MODELS:
+    'OLS_'     : 1, # estimate the OLS model.
+    'OLS_PO_'  : 0, # estimate the OLS partialed-out model.
+    'TWO_SLS_' : 1, # estimate the 2SLS model.
+    'NAIVE_ML_': 1, # estimate the naive ML model.
+    'DML_PLR_' : 1, # estimate the DML-PLR model.
+    'DML_IRM_' : 1, # estimate the DML-IRM model.
+    'DML_PLIV_': 1, # estimate the DML-PLIV model.
+    'DML_IIV_' : 1, # estimate the DML-IIV model.
+alog_type_list : ['Lasso'] # default: ['Lasso','RF', 'XGBoost']. Available: ['Lasso', 'RF','XGBoost','NN', Dols]. list of considered ml algorithms.

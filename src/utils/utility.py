@@ -18,6 +18,24 @@ from sklearn.linear_model import Lasso, LogisticRegression , LinearRegression
 from sklearn.neural_network import MLPClassifier, MLPRegressor 
 from sklearn.preprocessing import StandardScaler
 
+import argparse, yaml
+
+def get_configs(default):
+    '''Parse the configuration file name from command line or set to default.'''
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config_file", default=default, type=str, help='configuration file for setup specifications')
+
+    configs = parser.parse_args()
+    return configs
+
+def set_configs(default='default_config.yaml'):
+    '''Set the configuration parameters based on the configuration file inputs'''
+    configs = get_configs(default)
+    f = open(os.path.join('config',configs.config_file),'rb')
+    # load the config dictionnary form the yaml config file:
+    config_params = yaml.load(f, Loader=yaml.FullLoader)
+    return config_params
+    
 
 def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV_DGP=0):
     
