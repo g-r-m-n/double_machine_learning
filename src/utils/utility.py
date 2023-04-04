@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-#from linearmodels import IV2SLS, IVGMM, OLS
 from statsmodels.sandbox.regression.gmm import IV2SLS, OLS
 import doubleml as dml
+from doubleml.double_ml_data import DoubleMLData
 import matplotlib.pyplot as plt
 import sklearn.metrics as metrics 
 from sklearn.base import clone
@@ -12,33 +13,48 @@ from scipy.linalg import toeplitz
 _array_alias = ['array', 'np.ndarray', 'np.array', np.ndarray]
 _data_frame_alias = ['DataFrame', 'pd.DataFrame', pd.DataFrame]
 _dml_data_alias = ['DoubleMLData', dml.DoubleMLData]
-#from xgboost import XGBClassifier,XGBRegressor
 from lightgbm import LGBMClassifier, LGBMRegressor
 from sklearn.linear_model import Lasso, LogisticRegression , LinearRegression
 from sklearn.neural_network import MLPClassifier, MLPRegressor 
 from sklearn.preprocessing import StandardScaler
-
 import argparse, yaml
 
-def get_configs(default):
-    '''Parse the configuration file name from command line or set to default.'''
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config_file", default=default, type=str, help='configuration file for setup specifications')
 
-    configs = parser.parse_args()
-    return configs
 
-def set_configs(default='default_config.yaml'):
-    '''Set the configuration parameters based on the configuration file inputs'''
-    configs = get_configs(default)
-    f = open(os.path.join('config',configs.config_file),'rb')
+
+
+def set_configs(configs):
+    """Set the configuration parameters based on the configuration file inputs
+    
+    Parameters
+    ----------
+    configs :
+        The parsed the configuration information from command line. 
+    """
+    f = open(os.path.join(configs.pth_to_src,'config',configs.config_file),'rb')
     # load the config dictionnary form the yaml config file:
     config_params = yaml.load(f, Loader=yaml.FullLoader)
     return config_params
     
 
+
 def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV_DGP=0):
+    """
+    Get the list models that will be considered in the current setting 
     
+    Parameters
+    ----------
+    MODELS :
+        The model dictionnary from the run configuration.
+    model_index :
+        The list of (already) considered models.
+    alog_type :
+        The type of the considered machine learning algorithm.
+    NON_LINEAR_DGP:
+        If a non-linear data generating process should be used.
+    IV_DGP :
+        If a data generating process with instrumental variables and endgogeneity should be used.
+    """
     if MODELS['OLS_'] and ('OLS' not in model_index):
         model_index.append('OLS')
     if MODELS['OLS_PO_'] and ('OLS-partialed-out' not in model_index):
@@ -60,6 +76,9 @@ def get_model_index(MODELS, model_index=[], alog_type='RF', NON_LINEAR_DGP=0, IV
 
 
 class model_object:
+    """ 
+    The model object class to specify the DML model, its data, perform training and prediction and collect the results.
+    """
     
     def __init__(self, model_type, algo_type='RF', n_fold = 2, param_grids_reg=[],param_grids_class=[], score = 'partialling out'):
         self.type = model_type
@@ -91,8 +110,6 @@ class model_object:
                 learner_class = RandomForestClassifier(n_estimators=100, max_features=20, max_depth=5, min_samples_leaf=2)
                 
             elif self.algo_type == 'XGBoost':   
-                #learner_reg   = XGBRegressor(n_estimators=100, max_depth=5,  learning_rate =0.1)   
-                #learner_class = XGBClassifier(n_estimators=100, max_depth=5,  learning_rate =0.1, eval_metric ='logloss', use_label_encoder=False) 
                 learner_reg   = LGBMRegressor(n_estimators=100, max_depth=5,  learning_rate =0.1)   
                 learner_class = LGBMClassifier(n_estimators=100, max_depth=5,  learning_rate =0.1) 
 
@@ -354,12 +371,31 @@ class model_object:
 
         return  results_rep_pred
 
-
-    
-
+   
 
 def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folder_plots = '', title1 = '', YLIM=[0,1], SAVE_OUTPUT = 0):
-    #plt.style.use('ggplot')
+    """
+    Plot the result statistics with errorbar plots
+    
+    Parameters:
+    -------------
+    results_rep :
+        The result dataframe.
+    theta :
+        The true parameter value            
+    model_index :
+        The list of considered models.
+    max_int_x :
+        The maximum number of cases for which the line of the true parameter should be shown
+    output_folder_plots :
+        The path to the output folder.
+    title1 :
+        The title of the resulting plot files to be saved.
+    YLIM :
+        The limiations of the y-axis of the plot.
+    SAVE_OUTPUT :
+        If the plot should be saved.
+    """   
     import matplotlib.pyplot as plt
     plt.rcParams['figure.figsize'] = (16.0, 16.0)
     plt.dpi = 100
@@ -391,7 +427,6 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
             y = results_rep['coef_'+model_type+' '+algo_type]
             asymmetric_error = [abs(results_rep['lower_bound_'+model_type+' '+algo_type].values-y), abs(y-results_rep['upper_bound_'+model_type+' '+algo_type].values)]
             
-            
             axes[i,j].errorbar(x, y, yerr=asymmetric_error, fmt='o')
             axes[i,j].set_title(m.upper(), fontsize=16)
             axes[i,j].hlines(theta, 1, max_int_x-1, color='red')
@@ -404,27 +439,38 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
                 #label.set_fontweight('bold')
                 label.set_size('16')
     
-        
     # Saving plot to pdf file
     if SAVE_OUTPUT:
         plt.savefig(output_folder_plots  +title1+'.pdf', dpi=plt.dpi,bbox_inches="tight")
         #plt.title(title1, fontsize=20)
         plt.savefig(output_folder_plots  +title1+ '.png', dpi=plt.dpi,bbox_inches="tight")
 
-
     plt.show()
+  
     
     
 def save_to_tex(df, output_folder_file_path, column_format='', caption='', label='', index=False):
     """
     Save a data table to LaTeX in the local folder.
-    :param df: (dataframe) dataframe to be saved.
-    :param output_folder_file_path: (string) path and file name in the local folder the dataframe is saved to.
-    :param column_format: (string) the column format in LaTeX style of the table to be saved. If not provided, the column_format will be automatically generated
-    :param caption: (string) the caption to be shown in LaTeX of the table to be saved.
-    :param label: (string) the label to be shown in LaTeX of the table to be saved.
-    :param index: (boolean) indicating whether the index of the dataframe should be saved.
-    :return True: (boolean)  .
+    
+    Parameters
+    ----------
+    df : 
+        The dataframe to be saved.
+    output_folder_file_path : 
+        The path and file name in the local folder the dataframe is saved to.
+    column_format : 
+        The column format in LaTeX style of the table to be saved. If not provided, the column_format will be automatically generated
+    caption : 
+        The caption to be shown in LaTeX of the table to be saved.
+    label : 
+        The label to be shown in LaTeX of the table to be saved.
+    index : 
+        If the index of the dataframe should be saved.
+    Return 
+    ----------
+    : 
+        The boolean value True
     """
     df= df.copy()
     # convert to pandas dataframe if df is not:
@@ -456,21 +502,47 @@ def save_to_tex(df, output_folder_file_path, column_format='', caption='', label
     with open(output_folder_file_path+ '.tex', 'w') as texf:
         texf.write(df.style.to_latex(column_format=column_format, label=label,caption=caption, position='H',hrules= True, position_float= "centering"))
     return True
-    
+   
+ 
    
 def error_stats(theta, y_pred):
+    """
+    Compute the error statistics.
+    
+    Parameters:
+    -------------
+    theta :
+        The true parameter value
+    y_pred :
+        The estimated value.
+    """
     if not hasattr(theta, '__len__') or len(theta) ==1:
         y_true = np.repeat(theta, len(y_pred))
     else:
         y_true = theta
     mean_absolute_error=metrics.mean_absolute_error(y_true, y_pred) 
     mse=metrics.mean_squared_error(y_true, y_pred) 
-    #median_absolute_error=metrics.median_absolute_error(y_true, y_pred)
-    #return {'MSE': round(mse,4),'RMSE': round(np.sqrt(mse),4),'MAE': round(mean_absolute_error,4), 'MEDIAN-AE':round(median_absolute_error,4) } 
     return {'RMSE': round(np.sqrt(mse),4),'MAE': round(mean_absolute_error,4), 'Bias':round(np.mean(y_pred-y_true),4) }    	
 
 
+
 def get_res_stats(results_rep, model_index, theta, PRINT = 1, prefix = 'coef_'):
+    """
+    Get the result statistics as a fromatted dataframe.
+    
+    Parameters:
+    -------------
+    results_rep :
+        The result dataframe.
+    model_index :
+        The list of considered models.
+    theta :
+        The true parameter value        
+    PRINT :
+        If the intermediate results should be printed.
+    prefix :
+        The prefix to add to the labels of the stored results.
+    """    
     if 0:#len(results_rep)<= 1:
         return []
     res_stats = pd.DataFrame()
@@ -490,7 +562,20 @@ def get_res_stats(results_rep, model_index, theta, PRINT = 1, prefix = 'coef_'):
     return res_stats
 
 
+
 def get_res_stats_agg(results_rep_pred, model_index, PRINT = 1):
+    """
+    Get the aggregate result statistics as a fromatted dataframe.
+    
+    Parameters:
+    -------------
+    results_rep_pred :
+        The result dataframe.
+    model_index :
+        The list of considered models.    
+    PRINT :
+        If the intermediate results should be printed.
+    """      
     res_stats  = pd.DataFrame()
     mean_stats = results_rep_pred.mean().round(3)
     for m in model_index:
@@ -511,6 +596,7 @@ def get_res_stats_agg(results_rep_pred, model_index, PRINT = 1):
     return res_stats
 
 
+
 def non_orth_score_w_g(y, d, l_hat, m_hat, g_hat, smpls, *kwargs):
     """ author: DoubleML python package.
     Non-orthotogonal score for partial linear model, i.e., the naive partial linear model. """
@@ -525,13 +611,11 @@ def non_orth_score_w_g(y, d, l_hat, m_hat, g_hat, smpls, *kwargs):
 # Add modified versions of the used data generating functions from DoubleML package, so that the data generating process can be further altered, if wanted. (Per default it is not.)
 ######################################################################################
 
-from doubleml.double_ml_data import DoubleMLData
-
 
 def make_plr_CCDDHNR2018_II(n_obs=500, dim_x=20, alpha=0.5, return_type='DoubleMLData', add_additional_nonlinearity = False, **kwargs):
     """Modified version of make_plr_CCDDHNR2018 from DoubleML package.
     
-    Generates data from a partially linear regression model used in Chernozhukov et al. (2018) for Figure 1.
+    Generates data from a partially linear regression model used in Chernozhukov et al. (2018) for Figure 1 with an option to add additional nonlinearity.
     The data generating process is defined as
 
     .. math::
@@ -565,6 +649,8 @@ def make_plr_CCDDHNR2018_II(n_obs=500, dim_x=20, alpha=0.5, return_type='DoubleM
         If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
 
         If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d)``.
+    add_additional_nonlinearity :
+        If additional nonlinearity is added.
     **kwargs
         Additional keyword arguments to set non-default values for the parameters
         :math:`a_0=1`, :math:`a_1=0.25`, :math:`s_1=1`, :math:`b_0=1`, :math:`b_1=0.25` or :math:`s_2=1`.
@@ -616,13 +702,12 @@ def make_plr_CCDDHNR2018_II(n_obs=500, dim_x=20, alpha=0.5, return_type='DoubleM
     else:
         raise ValueError('Invalid return_type.')
         
-
-    
+  
         
 def make_irm_data_II(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, return_type='DoubleMLData', add_additional_nonlinearity = False):
     """
     Modified version of make_irm_data from DoubleML package.
-    Generates data from a interactive regression (IRM) model.
+    Generates data from a interactive regression (IRM) model with an option to add additional nonlinearity with an option to add additional nonlinearity.
     The data generating process is defined as
 
     .. math::
@@ -663,7 +748,9 @@ def make_irm_data_II(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, return_ty
         If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
 
         If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d)``.
-
+    add_additional_nonlinearity :
+        If additional nonlinearity is added.
+        
     References
     ----------
     Belloni, A., Chernozhukov, V., Fernández‐Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With
@@ -704,12 +791,11 @@ def make_irm_data_II(n_obs=500, dim_x=20, theta=0, R2_d=0.5, R2_y=0.5, return_ty
         raise ValueError('Invalid return_type.')
         
         
-        
-
+       
 def make_pliv_CHS2015_II(n_obs, alpha=1., dim_x=200, dim_z=150, return_type='DoubleMLData', add_additional_nonlinearity = False):
     """
     Modified version of make_pliv_CHS2015 from DoubleML package.
-    Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015).
+    Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015) with an option to add additional nonlinearity.
     The data generating process is defined as
 
     .. math::
@@ -750,7 +836,11 @@ def make_pliv_CHS2015_II(n_obs, alpha=1., dim_x=200, dim_z=150, return_type='Dou
         If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
 
         If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d, z)``.
-
+    add_additional_nonlinearity :
+        If additional nonlinearity is added.
+    add_additional_nonlinearity :
+        If additional nonlinearity is added.
+            
     References
     ----------
     Chernozhukov, V., Hansen, C. and Spindler, M. (2015), Post-Selection and Post-Regularization Inference in Linear
@@ -801,14 +891,13 @@ def make_pliv_CHS2015_II(n_obs, alpha=1., dim_x=200, dim_z=150, return_type='Dou
             return DoubleMLData(data, 'y', 'd', x_cols, z_cols)
     else:
         raise ValueError('Invalid return_type.')
-
         
         
 
 def make_iivm_data_II(n_obs=500, dim_x=20, theta=1., alpha_x=0.2, return_type='DoubleMLData',  add_additional_nonlinearity = False):
     """
     Modified version of make_iivm_data from DoubleML package.
-    Generates data from a interactive IV regression (IIVM) model.
+    Generates data from a interactive IV regression (IIVM) model with an option to add additional nonlinearity.
     The data generating process is defined as
 
     .. math::
@@ -847,7 +936,9 @@ def make_iivm_data_II(n_obs=500, dim_x=20, theta=1., alpha_x=0.2, return_type='D
         If ``'DataFrame'``, ``'pd.DataFrame'`` or ``pd.DataFrame``, returns a ``pd.DataFrame``.
 
         If ``'array'``, ``'np.ndarray'``, ``'np.array'`` or ``np.ndarray``, returns ``np.ndarray``'s ``(x, y, d, z)``.
-
+    add_additional_nonlinearity :
+        If additional nonlinearity is added.
+        
     References
     ----------
     Farbmacher, H., Guber, R. and Klaaßen, S. (2020). Instrument Validity Tests with Causal Forests. MEA Discussion

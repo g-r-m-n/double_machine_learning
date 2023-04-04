@@ -1,6 +1,5 @@
-TEST_RUN    : 0 # default: 0 conduct a test run with modified settings
 SAVE_OUTPUT : 0 # default: 1. Save the output of the script.
-SCENARIOS   : [1] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   : [1, 2, 3, 4] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   : 1 # default: 1. Run the estimation process or otherwise re-load results.

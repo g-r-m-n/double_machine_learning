@@ -1,34 +1,50 @@
-# %% setup
-# pip install numpy pandas doubleml datetime matplotlib xgboost
+# -*- coding: utf-8 -*-
 
-# run the file in iPython with a specific argument setting:
-# runfile('C:/DEV/double_machine_learning/src/scenario_run.py', args='--config_file test_run_config.yaml', wdir='C:/DEV/double_machine_learning/src')
-        
+# Usage:
+    
+# Run the file e.g. in Python with a specific argument setting:   
+#   python PATH_TO_YOUR_FOLDER/double_machine_learning/src/scenario_run.py --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml
+# E.g.:
+#   python C:/DEV/double_machine_learning/src/scenario_run.py --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml    
+
+# Run the file e.g. in iPython with a specific argument setting:
+#   runfile('PATH_TO_YOUR_FOLDER/double_machine_learning/src/scenario_run.py', args=' --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml')
+# E.g.:
+#   runfile('C:/DEV/double_machine_learning/src/scenario_run.py', args=' --project_folder C:/DEV/ --config_file test_run_config.yaml')    
+
+
+# %% setup
+      
 # load libraries
 import numpy as np
 import pandas as pd
 from doubleml.datasets import make_iivm_data, make_pliv_CHS2015, make_plr_CCDDHNR2018, make_irm_data
-import sys, os, json
+import sys, os, json, argparse
 from datetime import date
 
 
 # set the path to repository:
-root_dir = 'C:/DEV/'
-#root_dir = '/home/studio-lab-user/'
-#root_dir ='/mnt/batch/tasks/shared/LS_root/mounts/clusters/grmnzntt1/code/Users/grmnzntt/'
+parser = argparse.ArgumentParser()
+parser.add_argument("--project_folder", default= 'C:/DEV/',             type=str)
+parser.add_argument("--config_file",    default= 'default_config.yaml', type=str)
+configs = parser.parse_args()
+configs.pth_to_src =  os.path.join(configs.project_folder,'double_machine_learning/src/')
+# get the path to the source file repository:   
+pth_to_src = configs.pth_to_src
 
-pth_to_src = root_dir+'double_machine_learning/src/'
-# data:
-today = date.today().strftime('%Y%m%d')
+# specify output_folders:
+# current date:
+today = date.today().strftime('%Y%m%d') # use the current date to save date specific outcomes.
 # output folders:
 path_to_data  = pth_to_src + 'data/'
 output_folder = path_to_data+today+'/'
-output_folder_plots  = output_folder+'plots/'
-output_folder_tables = output_folder+'tables/'
+output_folder_plots  = output_folder+'plots/' # folder for plot outcomes
+output_folder_tables = output_folder+'tables/'# folder for tabluar outcomes
 # create output_folders if they do not exist:
 os.makedirs(output_folder,exist_ok=True)
 os.makedirs(output_folder_plots,exist_ok=True)
 os.makedirs(output_folder_tables,exist_ok=True)
+
 # load utility functions
 sys.path.append(pth_to_src+'/utils/')
 from utility import *
@@ -40,8 +56,8 @@ np.random.seed(4444)
 
 
 # set the run parameter configurations:  
-config_params = set_configs() 
-# config_params = set_configs('test_run_config.yaml')
+config_params = set_configs(configs) 
+
 #unpack the dictionnary to variables
 locals().update(config_params)
 

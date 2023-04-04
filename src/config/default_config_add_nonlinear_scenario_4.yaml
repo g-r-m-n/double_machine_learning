@@ -1,5 +1,5 @@
 SAVE_OUTPUT : 1 # default: 1. Save the output of the script.
-SCENARIOS   : [1, 2, 3, 4] # default [1, 2, 3, 4]. The list of Scenarios to run.
+SCENARIOS   : [4] # default [1, 2, 3, 4]. The list of Scenarios to run.
 #IV_DGP         = 0 # default: 1. Use a IV data-generating process.
 #NON_LINEAR_DGP = 0 # default: 1. Use a non-linear data-generating process (DGP) and otherwise a parial linear DGP.
 ESTIMATE   : 1 # default: 1. Run the estimation process or otherwise re-load results.
@@ -10,7 +10,7 @@ n_obs : 10000  # default: 10000 number of observations.
 dim_x : 20     # default: 20. Number of explanatory (confunding) varOiables.
 n_fold: 5      # default: 5. Number of folds for ML model cross-fitting.
 score : 'partialling out' # default: 'partialling out'. The score function in the dml model PLR and PLIV models. Either 'partialling out' or 'IV-type'.
-add_additional_nonlinearity : 0 # default: 0 . Add additional non-linearity in the data generating process of y.
+add_additional_nonlinearity : 1 # default: 0 . Add additional non-linearity in the data generating process of y.
 TUNE_MODEL : 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
 FORCE_TUING_1 : 1 # default: 1. Force tuning at the first repetition.
 # models to consider using the first replication.
