@@ -5,7 +5,7 @@
 # Run the file e.g. in Python with a specific argument setting:   
 #   python PATH_TO_YOUR_FOLDER/double_machine_learning/src/scenario_run.py --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml
 # E.g.:
-#   python C:/DEV/double_machine_learning/src/scenario_run.py --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml    
+#   python /home/studio-lab-user/double_machine_learning/src/scenario_run.py --project_folder /home/studio-lab-user --config_file default_config.yaml    
 
 # Run the file e.g. in iPython with a specific argument setting:
 #   runfile('PATH_TO_YOUR_FOLDER/double_machine_learning/src/scenario_run.py', args=' --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml')
