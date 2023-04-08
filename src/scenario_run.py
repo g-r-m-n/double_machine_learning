@@ -26,7 +26,7 @@ from datetime import date
 # set the path to repository:
 parser = argparse.ArgumentParser()
 parser.add_argument("--project_folder", default= 'C:/DEV/',             type=str)
-parser.add_argument("--config_file",    default= 'default_config.yaml', type=str)
+parser.add_argument("--config_file",    default= 'test_run_config_v2.yaml', type=str) # default_config.yaml
 configs = parser.parse_args()
 configs.pth_to_src =  os.path.join(configs.project_folder,'double_machine_learning/src/')
 # get the path to the source file repository:   
