@@ -15,8 +15,7 @@ See the DML/requirements.txt file for package requirements to run the analysis.
 
 
 ## Run
-Adjust the settings in the an according .yaml file in the ./src/config folder or leave the default settings. Run the script DML/src/scenario_run.py. It conducts per default (using default_config.yaml) all experimentation scenario runs, including data generation and tuning if wanted, and produces as result summary tables (in .csv and .tex formats) and plots (in .png and .pdf formats) of the outcomes.
-
+Adjust the settings in a specific .yaml file in the folder ./src/config or leave the default settings. Per default the script uses the specifications from default_config.yaml. Run the script DML/src/scenario_run.py. It conducts in the default setting all experimentation scenario runs, including data generation and tuning if wanted, and produces as result summary tables (in .csv and .tex formats) and plots (in .png and .pdf formats) of the outcomes.
 
 ## Summary
 A paper that summarizes the approach, outcomes and findings is available [here](https://github.com/g-r-m-n/dml/blob/main/Is%20Double%20Machine%20Learning%20always%20better%20than%20Simple%20Linear%20Regression%20to%20estimate%20Causal%20Effects%20-%20Evidence%20from%20four%20simulation%20experiments.pdf).
