@@ -12,7 +12,7 @@ n_fold: 5      # default: 5. Number of folds for ML model cross-fitting.
 score : 'partialling out' # default: 'partialling out'. The score function in the dml model PLR and PLIV models. Either 'partialling out' or 'IV-type'.
 add_additional_nonlinearity : 0 # default: 0 . Add additional non-linearity in the data generating process of y.
 TUNE_MODEL : 1 # default: 1. Tune the model using a n_fold-fold cross-validation with grid search
-FORCE_TUING_1 : 1 # default: 1. Force tuning at the first repetition.
+FORCE_TUNING_1 : 1 # default: 1. Force tuning at the first repetition.
 # models to consider using the first replication.
 MODELS:
     'OLS_'     : 1, # estimate the OLS model.

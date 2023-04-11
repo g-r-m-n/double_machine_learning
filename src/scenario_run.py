@@ -162,7 +162,7 @@ for SCENARIO in SCENARIOS:
                 if TUNE_MODEL and model_object_m.type_dml:
                     file_name_tuned_parameters = path_to_data+'tuned_parameters_%s_%s.txt'%(SCENARIO,m)
                     # check if tuned parameters already exist:
-                    if (os.path.isfile(file_name_tuned_parameters)) and ((FORCE_TUING_1!=1) or (i_rep>0)): 
+                    if (os.path.isfile(file_name_tuned_parameters)) and ((FORCE_TUNING_1!=1) or (i_rep>0)): 
                         # reading the data from the file
                         with open(file_name_tuned_parameters) as f:
                             tuned_params = f.read()
@@ -177,7 +177,7 @@ for SCENARIO in SCENARIOS:
                                     tuned_params[i][j] =                                 [np.repeat(tuned_params[i][j][0][0],model_object_m.n_folds).tolist()]
                                 
                         # set the tuned_params
-                        if FORCE_TUING_1 != -1:
+                        if FORCE_TUNING_1 != -1:
                             model_object_m.model_obj.params.update(tuned_params)
                     else:
                         #tune the parameters
