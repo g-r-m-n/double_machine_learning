@@ -39,7 +39,7 @@ pth_to_src = configs.pth_to_src
 today = date.today().strftime('%Y%m%d') # use the current date to save date specific outcomes.
 # output folders:
 path_to_data  = pth_to_src + 'data/'
-path_to_tune  = pth_to_src + 'tune/'
+path_to_tune  = pth_to_src + 'model/'
 output_folder = path_to_data+today+'/'
 output_folder_plots  = output_folder+'plots/' # folder for plot outcomes
 output_folder_tables = output_folder+'tables/'# folder for tabluar outcomes
