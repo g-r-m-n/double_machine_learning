@@ -23,6 +23,7 @@ import argparse, yaml
 
 
 
+
 def set_configs(configs):
     """Set the configuration parameters based on the configuration file inputs
     
@@ -445,8 +446,8 @@ def plot_ate_est(results_rep, theta, model_index, max_int_x = None, output_folde
         #plt.title(title1, fontsize=20)
         plt.savefig(output_folder_plots  +title1+ '.png', dpi=plt.dpi,bbox_inches="tight")
 
-    plt.show()
-  
+    plt.show(block = False) # don't block to not stop script execusion at plotting
+    plt.pause(.001) # to enable plot creation while running a script
     
     
 def save_to_tex(df, output_folder_file_path, column_format='', caption='', label='', index=False):

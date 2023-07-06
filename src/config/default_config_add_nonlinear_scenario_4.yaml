@@ -7,7 +7,7 @@ n_rep : 100    # default: 100. number of repetitions.
 PRINT : 0      # default: 0.print (intermediate) results.
 theta : 0.5    # default: 0.5. The true ATE parameter.
 n_obs : 10000  # default: 10000 number of observations.
-dim_x : 20     # default: 20. Number of explanatory (confunding) varOiables.
+dim_x : 20     # default: 20. Number of explanatory (confunding) variables.
 n_fold: 5      # default: 5. Number of folds for ML model cross-fitting.
 score : 'partialling out' # default: 'partialling out'. The score function in the dml model PLR and PLIV models. Either 'partialling out' or 'IV-type'.
 add_additional_nonlinearity : 1 # default: 0 . Add additional non-linearity in the data generating process of y.
