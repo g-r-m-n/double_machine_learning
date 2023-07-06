@@ -1,0 +1,1 @@
+{"ml_l": {"d": [[{"fit_intercept": true}, {"fit_intercept": true}, {"fit_intercept": true}, {"fit_intercept": true}, {"fit_intercept": true}]]}, "ml_m": {"d": [[{"C": 0.0001}, {"C": 0.0001}, {"C": 0.0001}, {"C": 0.0001}, {"C": 0.0001}]]}, "ml_g": {"d": [[{"fit_intercept": true}, {"fit_intercept": true}, {"fit_intercept": true}, {"fit_intercept": true}, {"fit_intercept": true}]]}}

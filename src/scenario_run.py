@@ -6,6 +6,8 @@
 #   python PATH_TO_YOUR_FOLDER/double_machine_learning/src/scenario_run.py --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml
 # E.g.:
 #   python /home/studio-lab-user/double_machine_learning/src/scenario_run.py --project_folder /home/studio-lab-user --config_file default_config.yaml    
+# or
+# python /workspaces/double_machine_learning/src/scenario_run.py --project_folder /workspaces/ --config_file default_config_add_nonlinear_scenario_2.yaml  
 
 # Run the file e.g. in iPython with a specific argument setting:
 #   runfile('PATH_TO_YOUR_FOLDER/double_machine_learning/src/scenario_run.py', args=' --project_folder PATH_TO_YOUR_FOLDER --config_file test_run_config.yaml')
@@ -37,6 +39,7 @@ pth_to_src = configs.pth_to_src
 today = date.today().strftime('%Y%m%d') # use the current date to save date specific outcomes.
 # output folders:
 path_to_data  = pth_to_src + 'data/'
+path_to_tune  = pth_to_src + 'tune/'
 output_folder = path_to_data+today+'/'
 output_folder_plots  = output_folder+'plots/' # folder for plot outcomes
 output_folder_tables = output_folder+'tables/'# folder for tabluar outcomes
@@ -160,7 +163,7 @@ for SCENARIO in SCENARIOS:
                 model_object_m.update_data(data)
                 # tune the model dml objects:
                 if TUNE_MODEL and model_object_m.type_dml:
-                    file_name_tuned_parameters = path_to_data+'tuned_parameters_%s_%s.txt'%(SCENARIO,m)
+                    file_name_tuned_parameters = path_to_tune+'tuned_parameters_%s_%s.txt'%(SCENARIO,m)
                     # check if tuned parameters already exist:
                     if (os.path.isfile(file_name_tuned_parameters)) and ((FORCE_TUNING_1!=1) or (i_rep>0)): 
                         # reading the data from the file

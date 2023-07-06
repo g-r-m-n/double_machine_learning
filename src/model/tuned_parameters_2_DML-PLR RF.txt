@@ -1,0 +1,1 @@
+{"ml_l": {"d": [[{"max_depth": 5, "max_features": 20, "min_samples_leaf": 1, "n_estimators": 400}, {"max_depth": 5, "max_features": 20, "min_samples_leaf": 1, "n_estimators": 400}]]}, "ml_m": {"d": [[{"max_depth": 5, "max_features": 10, "min_samples_leaf": 1, "n_estimators": 100}, {"max_depth": 5, "max_features": 10, "min_samples_leaf": 1, "n_estimators": 100}]]}}
